@@ -1,0 +1,17 @@
+{
+  "name": "qrajn-production",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Production QR management platform using Firebase Authentication, Realtime Database and Storage.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "check": "node --check server.mjs && node --check public/firebase-config.js && node --check public/qr-engine.js && node --check public/app.js && node --check scripts/project-check.mjs",
+    "test": "node scripts/qr-engine-test.mjs && node scripts/project-check.mjs",
+    "verify": "npm run check && npm test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

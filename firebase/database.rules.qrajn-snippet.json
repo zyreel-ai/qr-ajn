@@ -1,0 +1,48 @@
+{
+  "qrajn": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "qrs": {
+          "$qrId": {
+            ".validate": "!newData.exists() || (newData.hasChildren(['id','name','type','content','is_dynamic','is_active','created_at','updated_at','design']) && newData.child('id').val() === $qrId && newData.child('name').isString() && newData.child('name').val().length <= 100 && newData.child('type').isString() && newData.child('content').isString() && newData.child('content').val().length <= 4000 && newData.child('is_dynamic').isBoolean() && newData.child('is_active').isBoolean())"
+          }
+        },
+        "branding": {
+          ".validate": "!newData.exists() || (newData.hasChildren(['title','theme','background','accent']) && newData.child('title').isString() && newData.child('title').val().length <= 100 && newData.child('background').isString() && newData.child('accent').isString())"
+        },
+        "settings": {
+          ".validate": "!newData.exists() || newData.hasChildren(['downloadFormat','timezone','emailNotifications'])"
+        }
+      }
+    },
+    "publicLinks": {
+      "$shortId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('ownerId').val() === auth.uid) || (data.exists() && data.child('ownerId').val() === auth.uid && (!newData.exists() || newData.child('ownerId').val() === auth.uid)))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['shortId','ownerId','qrId','destination','active','updatedAt']) && newData.child('shortId').val() === $shortId && newData.child('ownerId').isString() && newData.child('qrId').isString() && newData.child('destination').isString() && newData.child('destination').val().matches(/^https?:\\/\\//) && newData.child('active').isBoolean() && newData.child('updatedAt').isNumber())",
+        ".read": true
+      }
+    },
+    "publicBranding": {
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "!newData.exists() || (newData.hasChildren(['title','theme','background','accent']) && newData.child('title').isString() && newData.child('title').val().length <= 100)",
+        ".read": true
+      }
+    },
+    "scanEvents": {
+      "$ownerId": {
+        ".read": "auth != null && auth.uid === $ownerId",
+        ".indexOn": [
+          "timestamp",
+          "qrId"
+        ],
+        "$eventId": {
+          ".write": "auth != null && (auth.uid === $ownerId || (!data.exists() && newData.exists() && newData.child('scannerUid').val() === auth.uid && root.child('qrajn').child('publicLinks').child(newData.child('shortId').val()).child('ownerId').val() === $ownerId && root.child('qrajn').child('publicLinks').child(newData.child('shortId').val()).child('qrId').val() === newData.child('qrId').val() && root.child('qrajn').child('publicLinks').child(newData.child('shortId').val()).child('active').val() === true))",
+          ".validate": "!newData.exists() || (newData.hasChildren(['id','qrId','shortId','scannerUid','timestamp','device','browser','os','language','timezone','referrer','screen']) && newData.child('id').val() === $eventId && newData.child('qrId').isString() && newData.child('shortId').isString() && newData.child('scannerUid').isString() && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now + 60000 && newData.child('timestamp').val() >= now - 300000 && newData.child('device').isString() && newData.child('device').val().length <= 30 && newData.child('browser').isString() && newData.child('browser').val().length <= 40 && newData.child('os').isString() && newData.child('os').val().length <= 40 && newData.child('language').isString() && newData.child('language').val().length <= 30 && newData.child('timezone').isString() && newData.child('timezone').val().length <= 80 && newData.child('referrer').isString() && newData.child('referrer').val().length <= 500 && newData.child('screen').isString() && newData.child('screen').val().length <= 40)"
+        }
+      }
+    }
+  }
+}
