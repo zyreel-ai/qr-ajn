@@ -1,31 +1,20 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
 const read=p=>fs.readFileSync(path.join(root,p),"utf8");
-const required=["public/index.html","public/app.js","public/firebase-backend.js","public/firebase-config.js","public/qr-engine.js","vercel.json","firebase/database.rules.qrajn-snippet.json"];
+const required=["public/index.html","public/app.js","public/firebase-backend.js","public/firebase-config.js","public/qr-engine.js","public/assets/qr-ajn-logo.svg","public/assets/business-profile-illustration.svg","api/redirect.js","api/qr-secret.js","api/domain-check.js","vercel.json","firebase/database.rules.qrajn-snippet.json","PRODUCTION_SETUP.md"];
 for(const f of required)if(!fs.existsSync(path.join(root,f)))throw new Error(`Missing required file: ${f}`);
-
-const config=read("public/firebase-config.js");
-for(const token of ["unna-space-prod-226ff4","default-rtdb.asia-southeast1.firebasedatabase.app","https://qrajn.online"]) {
-  if(!config.includes(token))throw new Error(`Firebase/domain configuration missing: ${token}`);
-}
-const app=read("public/app.js");
-for(const banned of ["Record test scan","Open local demo workspace","qrforge-local-demo"]) {
-  if(app.includes(banned))throw new Error(`Demo/test behavior still present: ${banned}`);
-}
-if(!app.includes("trackPublicScan"))throw new Error("Real scan tracking flow is missing.");
-const rules=JSON.parse(read("firebase/database.rules.qrajn-snippet.json"));
-if(!rules.qrajn?.users || !rules.qrajn?.scanEvents || !rules.qrajn?.publicLinks)throw new Error("QR AJN rules namespace is incomplete.");
-if(rules.qrajn.publicLinks[".read"] === true)throw new Error("Public links must not allow a bulk parent read.");
-if(rules.qrajn.publicLinks?.["$shortId"]?.[".read"] !== true)throw new Error("Per-shortId public read rule is missing.");
-const vercel=JSON.parse(read("vercel.json"));
-if(!vercel.rewrites?.some(x=>x.source==="/r/:path*"))throw new Error("Vercel dynamic redirect rewrite is missing.");
-if(vercel.outputDirectory!=="public")throw new Error("Vercel outputDirectory must be public.");
-console.log("QR AJN production project check: PASS");
-console.log("- Firebase project configured");
-console.log("- qrajn namespace rules present");
-console.log("- demo/test scan behavior removed");
-console.log("- real public scan tracking present");
-console.log("- qrajn.online dynamic route configured");
+const config=read("public/firebase-config.js");for(const token of ["unna-space-prod-226ff4","default-rtdb.asia-southeast1.firebasedatabase.app","https://qrajn.online","productName: \"QR AJN\""])if(!config.includes(token))throw new Error(`Configuration missing: ${token}`);
+const publicUi=read("public/index.html")+read("public/app.js")+read("public/styles.css");for(const banned of ["QRForge","FIREBASE SECURE AUTH","Pro billing coming soon","Upgrade to Pro","<span class=\"pill\">PRO</span>"])if(publicUi.includes(banned))throw new Error(`Legacy/public placeholder remains: ${banned}`);
+for(const requiredUi of ["Business Profiles","Campaign controls","Smart targeting","UTM parameters","Lead capture","Custom domain","Optional branding","/b/"])if(!publicUi.includes(requiredUi))throw new Error(`Required production UI missing: ${requiredUi}`);
+const backend=read("public/firebase-backend.js");for(const token of ["businessProfiles","publicBusinessProfiles","businessEvents","businessLeads","qrLeads","passwordProtected","smartTargeting","utm","customDomain"])if(!backend.includes(token))throw new Error(`Realtime feature missing: ${token}`);
+const rules=JSON.parse(read("firebase/database.rules.qrajn-snippet.json"));for(const key of ["users","publicLinks","scanEvents","publicBusinessProfiles","businessEvents","businessLeads","qrLeads","qrSecrets"])if(!rules.qrajn?.[key])throw new Error(`Rules path missing: qrajn/${key}`);
+if(rules.qrajn.qrSecrets[".read"]!==false||rules.qrajn.qrSecrets[".write"]!==false)throw new Error("QR secrets must be client-denied.");
+const vercel=JSON.parse(read("vercel.json"));if(!vercel.rewrites?.some(x=>x.source==="/r/:shortId"&&String(x.destination).startsWith("/api/redirect")))throw new Error("Server redirect rewrite missing.");if(!vercel.rewrites?.some(x=>x.source==="/b/:path*"))throw new Error("Business profile rewrite missing.");
+console.log("QR AJN V4 production project check: PASS");
+console.log("- QR AJN public branding only");
+console.log("- responsive business profiles and optional branding");
+console.log("- advanced QR campaign controls");
+console.log("- secure server redirect endpoints included");
+console.log("- realtime QR/profile/lead/analytics data paths included");

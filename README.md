@@ -1,108 +1,50 @@
-# QRForge / QR AJN — Firebase Realtime Production Build
+# QR AJN V4 — Dynamic QR + Business Profiles
 
-Production domain: **https://qrajn.online**
+QR AJN is a responsive QR management and business-profile application for `qrajn.online`.
 
-This build removes the seeded/demo scan database and connects the application UI directly to Firebase for real authentication, real Realtime Database persistence, real-time listeners, and Firebase Storage branding assets.
+## What is implemented
 
-## What is real
+- Email/password and Google account access.
+- Real-time QR workspace updates.
+- Dynamic website QR codes with stable short links.
+- Static Text, Email, SMS, Phone, Wi-Fi, vCard and Location QR codes.
+- PNG, SVG, JPG and WebP export.
+- Optional scan-page branding.
+- QR labels and status controls.
+- Expiry date/time and maximum-scan rules.
+- Schedule start/end rules with fallback URL.
+- Password-protected dynamic redirects through the server endpoint.
+- Consent-based QR lead capture.
+- Device, country and language smart targeting.
+- UTM campaign parameters.
+- Custom-domain DNS ownership check.
+- Multiple Business Profiles per account.
+- Public business URLs at `/b/<slug>` with no customer login.
+- Business products, services, offers, hours, contact actions, social links, brochure/review/UPI actions.
+- Optional Business Profile logo, cover and colors.
+- Business enquiry forms and action analytics.
+- Server-side scan recording with coarse edge location headers when available; no browser GPS request.
+- Mobile bottom navigation, tablet layouts, desktop layouts and reduced-motion support.
 
-- Firebase Email/Password Authentication
-- Google sign-in flow
-- Firebase password reset
-- Email verification message after sign-up
-- Firebase Realtime Database workspace data
-- Real-time QR list, branding, settings and scan analytics listeners
-- Firebase Storage logo uploads
-- Dynamic redirect links at `https://qrajn.online/r/<shortId>`
-- Real scan events created only when somebody actually opens a dynamic QR redirect
-- Scan time, device class, browser, OS, language, browser timezone, referrer and screen size
-- PNG / SVG / JPG / WebP QR export
-- Dynamic destination editing without changing the QR image
-- Static Wi-Fi, vCard, email, SMS, phone, location and text QR payloads
-- Responsive desktop/tablet/mobile UI, including mobile bottom navigation
+## Local preview
 
-## Privacy
-
-The redirect flow does **not** request GPS. A scan event does not pretend to know a city when it does not. Precise location can only be added later with a consent-based location flow or a trusted server-side GeoIP provider.
-
-## Firebase project
-
-This build uses the Firebase web app configuration supplied for:
-
-`unna-space-prod-226ff4`
-
-Because that project may also contain UNNA Space data, QRForge data is isolated under:
-
-```text
-/qrajn/users/{uid}
-/qrajn/publicLinks/{shortId}
-/qrajn/publicBranding/{uid}
-/qrajn/scanEvents/{ownerUid}/{eventId}
-```
-
-Do not delete or overwrite unrelated Firebase data.
-
-## Local run
-
-Requirements: Node.js 20+ and internet access (the browser loads Firebase's official ESM SDK).
+Requires Node.js 22+.
 
 ```powershell
-cd "QR_AJN_PRODUCTION_REALTIME"
 npm.cmd run verify
 npm.cmd start
 ```
 
-Open:
+Open `http://localhost:4173`.
 
-`http://localhost:4173`
+Local preview uses the browser fallback for ordinary dynamic QR redirects. Password-protected redirects and server-controlled lead collection require the deployment environment described in `PRODUCTION_SETUP.md`.
 
-## Required Firebase Console setup
+## Security model
 
-Before authentication and scan analytics will work, enable:
+The client owns only its own `qrajn/users/{uid}` workspace. Public link/profile mirrors are readable only at individual public paths. Scanner event/lead writes are shape-validated. `qrajn/qrSecrets` is denied to all clients and is written only by the server using privileged credentials.
 
-1. Authentication -> Sign-in method -> Email/Password
-2. Authentication -> Sign-in method -> Google
-3. Authentication -> Sign-in method -> Anonymous
-4. Authentication -> Settings -> Authorized domains:
-   - `qrajn.online`
-   - `www.qrajn.online`
-   - your Vercel preview domain while testing
-   - `localhost`
-5. Realtime Database rules: merge `firebase/database.rules.qrajn-snippet.json` into the existing rules under the root `rules` object.
-6. Storage rules: merge `firebase/storage.rules.qrajn-snippet.txt` into the existing Storage rules.
+Because the configured Firebase project is shared with another application, merge the QR AJN rule blocks instead of replacing unrelated global rules.
 
-**Important:** this repository intentionally does not auto-deploy Realtime Database or Storage rules, because replacing the whole ruleset in the shared `unna-space-prod-226ff4` project could break unrelated applications.
+## Production
 
-## Vercel
-
-`vercel.json` is already configured for SPA routes and dynamic `/r/:shortId` links.
-
-Recommended Vercel settings:
-
-- Framework preset: Other
-- Root directory: repository root
-- Build command: leave empty
-- Output directory: `public`
-- Install command: leave empty
-
-After deployment, add `qrajn.online` and `www.qrajn.online` under Project -> Settings -> Domains and point your DNS to the values Vercel shows.
-
-## GitHub
-
-The connected GitHub account currently needs a dedicated QR repository before this project can be pushed safely. Do **not** push QRForge into an unrelated AJN PDF repository.
-
-If GitHub CLI is installed and authenticated:
-
-```powershell
-.\scripts\CONNECT_GITHUB.ps1 -Repository "ajnpdf/qr-ajn"
-```
-
-The script can create the repository and push `main`.
-
-## Verification
-
-```powershell
-npm.cmd run verify
-```
-
-The verification checks the QR encoder, required Firebase configuration, qrajn namespace isolation, Vercel routing and absence of seeded/demo scan data.
+Read `PRODUCTION_SETUP.md` before deploying. Do not call the application production-complete until signup/login, dynamic QR creation, second-device scan analytics, destination editing, deactivation, business-profile publishing, enquiry capture and the public domain are verified on real devices.

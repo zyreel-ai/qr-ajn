@@ -2,26 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#4f46e5" />
-  <meta name="description" content="Create, customize and track dynamic QR codes with real-time analytics." />
-  <title>QRForge — Real-time Dynamic QR Analytics</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2216%22 fill=%22%237c3aed%22/><path d=%22M16 16h13v13H16zm4 4v5h5v-5zm15-4h13v13H35zm4 4v5h5v-5zM16 35h13v13H16zm4 4v5h5v-5zm17-4h5v5h-5zm7 0h4v13h-4zm-7 9h5v4h-5z%22 fill=%22white%22/></svg>" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="description" content="QR AJN helps you create dynamic QR codes, business profiles and real-time customer journeys." />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:title" content="QR AJN — Dynamic QR & Business Profiles" />
+  <meta property="og:description" content="Create, update and measure QR experiences with business profiles, leads and smart routing." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://qrajn.online/" />
+  <link rel="canonical" href="https://qrajn.online/" />
+  <link rel="icon" href="/assets/qr-ajn-logo.svg" type="image/svg+xml" />
+  <title>QR AJN — Dynamic QR & Business Profiles</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
   <div id="toast-root"></div>
-  <div id="app"><div class="boot"><div class="spinner"></div></div></div>
+  <div id="app"><div class="boot"><div class="spinner" aria-label="Loading"></div></div></div>
   <script type="importmap">
   {
     "imports": {
-      "firebase/app": "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js",
-      "firebase/auth": "https://www.gstatic.com/firebasejs/12.17.0/firebase-auth.js",
-      "firebase/database": "https://www.gstatic.com/firebasejs/12.17.0/firebase-database.js",
-      "firebase/storage": "https://www.gstatic.com/firebasejs/12.17.0/firebase-storage.js"
+      "firebase/app": "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js",
+      "firebase/database": "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js",
+      "firebase/storage": "https://www.gstatic.com/firebasejs/12.17.1/firebase-storage.js"
     }
   }
   </script>

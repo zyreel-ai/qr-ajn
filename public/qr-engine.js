@@ -1,5 +1,5 @@
 /**
- * QRForge offline QR Model 2 encoder.
+ * QR AJN offline QR Model 2 encoder.
  * Byte mode, versions 1-6, error correction L/M/Q/H, fixed mask 0.
  */
 const GF_EXP=new Uint8Array(512), GF_LOG=new Uint8Array(256);

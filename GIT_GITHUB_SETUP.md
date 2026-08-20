@@ -1,20 +1,17 @@
 # Git / GitHub setup
 
-A dedicated QR repository is required. The connected GitHub account currently exposes an unrelated repository, so this package intentionally does not overwrite it.
+Production repository:
 
-With GitHub CLI (`gh`) installed and authenticated:
-
-```powershell
-.\scripts\CONNECT_GITHUB.ps1 -Repository "ajnpdf/qr-ajn"
+```text
+https://github.com/zyreel-ai/qr-ajn
 ```
 
-The script:
+The easiest path from this ZIP is:
 
-1. initializes Git if needed
-2. creates/uses `main`
-3. commits the production source
-4. creates the GitHub repository if it does not exist
-5. sets `origin`
-6. pushes `main`
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force; .\PUSH_TO_GITHUB_ZYREEL.ps1
+```
 
-Secrets are not stored in this repository. The Firebase web config is client configuration, while authorization is enforced by Firebase Authentication and Rules.
+The script verifies the project, blocks obvious private-key files, confirms the active GitHub CLI account is `zyreel-ai`, fetches the existing `main` branch, creates the next commit from the extracted ZIP without overwriting the working files, pushes, then compares local and remote commit hashes.
+
+Never commit service-account JSON or private keys.

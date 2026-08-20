@@ -11,6 +11,6 @@ export const firebaseConfig = {
 export const QRAJN = Object.freeze({
   namespace: "qrajn",
   productionOrigin: "https://qrajn.online",
-  productName: "QRForge",
+  productName: "QR AJN",
   firebaseProjectId: "unna-space-prod-226ff4"
 });

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">QR AJN logo</title><desc id="desc">Rounded teal and green QR symbol</desc>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0f766e"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs>
+  <rect width="256" height="256" rx="64" fill="#f0fdfa"/>
+  <rect x="24" y="24" width="208" height="208" rx="52" fill="url(#g)"/>
+  <g fill="#fff">
+    <path d="M58 58h54v54H58zm12 12v30h30V70zM144 58h54v54h-54zm12 12v30h30V70zM58 144h54v54H58zm12 12v30h30v-30z"/>
+    <path d="M142 142h18v18h-18zm28 0h28v18h-10v10h-18zm-28 28h18v28h-18zm28 10h10v18h-10zm18-10h10v28h-10z"/>
+  </g>
+</svg>

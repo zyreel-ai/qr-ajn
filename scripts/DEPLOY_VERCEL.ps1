@@ -1,28 +1,10 @@
-param(
-  [string]$Domain = "qrajn.online"
-)
-
-$ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot\..
-
-Write-Host "Verifying QR AJN..." -ForegroundColor Cyan
-npm.cmd run verify
-
-if (-not (Get-Command npx.cmd -ErrorAction SilentlyContinue)) {
-  throw "Node.js/npm is required."
+& {
+    $ErrorActionPreference = "Stop"
+    Set-Location (Split-Path $PSScriptRoot -Parent)
+    npm.cmd run verify
+    if ($LASTEXITCODE -ne 0) { throw "Verification failed." }
+    Write-Host "Deploying QR AJN to a dedicated Vercel project..." -ForegroundColor Cyan
+    npx.cmd vercel --prod
+    if ($LASTEXITCODE -ne 0) { throw "Vercel deployment failed." }
+    Write-Host "After deployment, attach qrajn.online and www.qrajn.online in this QR AJN project only." -ForegroundColor Yellow
 }
-
-Write-Host ""
-Write-Host "Link this folder to a NEW dedicated Vercel project (recommended name: qr-ajn)." -ForegroundColor Yellow
-npx.cmd vercel@latest link
-
-Write-Host ""
-Write-Host "Deploying production..." -ForegroundColor Cyan
-npx.cmd vercel@latest --prod
-
-Write-Host ""
-Write-Host "Now add these domains in Vercel Project Settings -> Domains:" -ForegroundColor Green
-Write-Host "  $Domain"
-Write-Host "  www.$Domain"
-Write-Host ""
-Write-Host "Use the exact DNS records Vercel shows for this project." -ForegroundColor Yellow

@@ -1,0 +1,12 @@
+import { strict as assert } from "node:assert";
+import { applyUtm, classifyDevice, evaluateAvailability, selectDestination } from "../api/_redirect-logic.js";
+assert.equal(classifyDevice("Mozilla Android"),"android");
+assert.equal(classifyDevice("Mozilla iPhone"),"ios");
+assert.equal(classifyDevice("Mozilla Windows"),"desktop");
+assert.match(applyUtm("https://example.com/a",{enabled:true,source:"qrajn",medium:"qr",campaign:"launch"}),/utm_source=qrajn/);
+assert.equal(evaluateAvailability({active:false}).ok,false);
+assert.equal(evaluateAvailability({active:true,expiry:{enabled:true,at:"2020-01-01T00:00:00.000Z"}},Date.now()).reason,"expired");
+const link={active:true,destination:"https://example.com",smartTargeting:{enabled:true,rules:[{field:"device:android",value:"android",destination:"https://example.com/android"}]},utm:{enabled:true,source:"qrajn"}};
+assert.match(selectDestination(link,{device:"android"}),/\/android/);
+assert.match(selectDestination(link,{device:"android"}),/utm_source=qrajn/);
+console.log("Advanced redirect logic test: PASS");
