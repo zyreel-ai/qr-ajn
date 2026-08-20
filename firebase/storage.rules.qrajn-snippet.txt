@@ -1,22 +1,77 @@
-// Merge these match blocks inside your EXISTING Firebase Storage service block.
-// Do not delete unrelated application rules from the shared Firebase project.
+/*
+QR AJN V5 STORAGE MERGE BLOCK
+MERGE inside your EXISTING:
+service firebase.storage {
+  match /b/{bucket}/o {
+    ... HERE ...
+  }
+}
+DO NOT replace unrelated app rules in the shared Firebase project.
+*/
 
-match /qrajn/branding/{uid}/logo {
+function qrajnSignedIn() {
+  return request.auth != null;
+}
+
+function qrajnOwner(uid) {
+  return qrajnSignedIn() && request.auth.uid == uid;
+}
+
+function qrajnImage(maxBytes) {
+  return request.resource != null
+    && request.resource.size <= maxBytes
+    && request.resource.contentType != null
+    && request.resource.contentType.matches('image/(png|jpeg|webp)');
+}
+
+function qrajnPdf(maxBytes) {
+  return request.resource != null
+    && request.resource.size <= maxBytes
+    && request.resource.contentType == 'application/pdf';
+}
+
+match /qrajn/branding/{uid}/{fileName} {
   allow read: if true;
-  allow create, update: if request.auth != null
-                        && request.auth.uid == uid
-                        && request.resource != null
-                        && request.resource.size <= 1024 * 1024
-                        && request.resource.contentType.matches('image/(png|jpeg|webp)');
-  allow delete: if request.auth != null && request.auth.uid == uid;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(2 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
 }
 
 match /qrajn/business/{uid}/{profileId}/{fileName} {
   allow read: if true;
-  allow create, update: if request.auth != null
-                        && request.auth.uid == uid
-                        && request.resource != null
-                        && request.resource.size <= 3 * 1024 * 1024
-                        && request.resource.contentType.matches('image/(png|jpeg|webp)');
-  allow delete: if request.auth != null && request.auth.uid == uid;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(5 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/business/{uid}/{profileId}/products/{productId}/{fileName} {
+  allow read: if true;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(5 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/business/{uid}/{profileId}/services/{serviceId}/{fileName} {
+  allow read: if true;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(5 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/business/{uid}/{profileId}/gallery/{fileName} {
+  allow read: if true;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(5 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/business/{uid}/{profileId}/documents/{fileName} {
+  allow read: if true;
+  allow create, update: if qrajnOwner(uid) && qrajnPdf(10 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/qr-assets/{uid}/{qrId}/{fileName} {
+  allow read: if true;
+  allow create, update: if qrajnOwner(uid) && qrajnImage(2 * 1024 * 1024);
+  allow delete: if qrajnOwner(uid);
+}
+
+match /qrajn/{allPaths=**} {
+  allow read, write: if false;
 }

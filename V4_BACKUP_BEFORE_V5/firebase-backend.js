@@ -227,7 +227,7 @@ function normalizeProfile(input,id,ownerId){
     products:sanitizeList(input.products,30).map((p,i)=>({id:clean(p?.id||`p${i+1}`,40),name:clean(p?.name,100),price:clean(p?.price,50),description:clean(p?.description,500),image:clean(p?.image,2000),available:p?.available!==false})).filter(x=>x.name),
     services:sanitizeList(input.services,30).map((p,i)=>({id:clean(p?.id||`s${i+1}`,40),name:clean(p?.name,100),price:clean(p?.price,50),description:clean(p?.description,500)})).filter(x=>x.name),
     offers:sanitizeList(input.offers,20).map((o,i)=>({id:clean(o?.id||`o${i+1}`,40),title:clean(o?.title,120),description:clean(o?.description,500),expiresAt:clean(o?.expiresAt,40),active:o?.active!==false})).filter(x=>x.title),
-    blocks:{skills:clean(input.blocks?.skills,3000),education:clean(input.blocks?.education,5000),experience:clean(input.blocks?.experience,5000),projects:clean(input.blocks?.projects,5000),certifications:clean(input.blocks?.certifications,4000),team:clean(input.blocks?.team,4000),testimonials:clean(input.blocks?.testimonials,4000),faq:clean(input.blocks?.faq,4000),gallery:sanitizeList(input.blocks?.gallery,30).map(x=>safeHttpUrl(x)).filter(Boolean)},branding:{...DEFAULT_PROFILE_BRANDING,...(input.branding||{})},leadCapture:{enabled:input.leadCapture?.enabled!==false,title:clean(input.leadCapture?.title||"Send an enquiry",120),askEmail:!!input.leadCapture?.askEmail,askMessage:input.leadCapture?.askMessage!==false},
+    branding:{...DEFAULT_PROFILE_BRANDING,...(input.branding||{})},leadCapture:{enabled:input.leadCapture?.enabled!==false,title:clean(input.leadCapture?.title||"Send an enquiry",120),askEmail:!!input.leadCapture?.askEmail,askMessage:input.leadCapture?.askMessage!==false},
     updatedAt:Date.now(),createdAt:Number(input.createdAt||Date.now())
   };
 }
@@ -245,51 +245,7 @@ export async function deleteBusinessProfile(user,id){
 export async function uploadBusinessAsset(user,profileId,slot,file){user=requiredUser(user);const safeSlot=clean(slot,30).replace(/[^a-z0-9_-]/gi,"")||"image";return uploadImage(user,file,`${ROOT}/business/${user.uid}/${profileId}/${safeSlot}`,3);}
 export async function resolveBusinessProfile(slug){const snap=await get(ref(db,`${ROOT}/publicBusinessProfiles/${normalizeSlug(slug)}`));return snap.exists()?snap.val():null;}
 async function ensureScanner(){await waitForAuthReady();let scanner=auth.currentUser;if(!scanner)scanner=(await signInAnonymously(auth)).user;return scanner;}
-function clientInfo(){
- const ua=navigator.userAgent||"";
- const pick=(r,i=1)=>(ua.match(r)||[])[i]||"";
-
- let browser="Other",browserVersion="";
- if(/Edg\//i.test(ua)){browser="Edge";browserVersion=pick(/Edg\/([\d.]+)/i);}
- else if(/OPR\//i.test(ua)){browser="Opera";browserVersion=pick(/OPR\/([\d.]+)/i);}
- else if(/Chrome\//i.test(ua)){browser="Chrome";browserVersion=pick(/Chrome\/([\d.]+)/i);}
- else if(/Firefox\//i.test(ua)){browser="Firefox";browserVersion=pick(/Firefox\/([\d.]+)/i);}
- else if(/Safari\//i.test(ua)){browser="Safari";browserVersion=pick(/Version\/([\d.]+)/i);}
-
- let os="Other",osVersion="";
- if(/Android/i.test(ua)){os="Android";osVersion=pick(/Android\s+([\d.]+)/i);}
- else if(/iPhone|iPad/i.test(ua)){os="iOS";osVersion=pick(/OS\s+([\d_]+)/i).replaceAll("_",".");}
- else if(/Windows NT/i.test(ua)){os="Windows";osVersion=pick(/Windows NT\s+([\d.]+)/i);}
- else if(/Mac OS X/i.test(ua)){os="macOS";osVersion=pick(/Mac OS X\s+([\d_]+)/i).replaceAll("_",".");}
- else if(/Linux/i.test(ua)){os="Linux";}
-
- const androidModel=pick(/Android[^;]*;\s*([^;)]+?)(?:\s+Build\/|;|\))/i).trim();
- const tablet=/iPad|Tablet/i.test(ua);
- const mobile=/Android|iPhone|Mobile/i.test(ua);
- const device=tablet?"Tablet":mobile?"Mobile":"Desktop";
- const deviceName=androidModel||
-   (/iPad/i.test(ua)?"iPad":
-    /iPhone/i.test(ua)?"iPhone":
-    /Windows/i.test(ua)?"Windows PC":
-    /Macintosh/i.test(ua)?"Mac":
-    /Linux/i.test(ua)?"Linux device":device);
-
- return {
-  device,
-  deviceName:deviceName.slice(0,80),
-  browser,
-  browserVersion:browserVersion.slice(0,30),
-  os,
-  osVersion:osVersion.slice(0,30),
-  language:String(navigator.language||"Unknown").slice(0,30),
-  timezone:String(Intl.DateTimeFormat().resolvedOptions().timeZone||"Unknown").slice(0,80),
-  referrer:String(document.referrer||"").slice(0,500),
-  screen:`${screen.width||0}x${screen.height||0}`.slice(0,40),
-  pixelRatio:Number(window.devicePixelRatio||1),
-  touchPoints:Number(navigator.maxTouchPoints||0),
-  userAgent:ua.slice(0,500)
- };
-}
+function clientInfo(){const ua=navigator.userAgent||"";const mobile=/Android|iPhone|iPad|Mobile/i.test(ua);const browser=/Edg/i.test(ua)?"Edge":/Chrome/i.test(ua)?"Chrome":/Firefox/i.test(ua)?"Firefox":/Safari/i.test(ua)?"Safari":"Other";const os=/Android/i.test(ua)?"Android":/iPhone|iPad/i.test(ua)?"iOS":/Windows/i.test(ua)?"Windows":/Mac OS/i.test(ua)?"macOS":/Linux/i.test(ua)?"Linux":"Other";return {device:mobile?"Mobile":"Desktop",browser,os,language:String(navigator.language||"Unknown").slice(0,30),timezone:String(Intl.DateTimeFormat().resolvedOptions().timeZone||"Unknown").slice(0,80),referrer:String(document.referrer||"").slice(0,500),screen:`${screen.width||0}x${screen.height||0}`.slice(0,40)};}
 export async function trackBusinessEvent(profile,eventType,meta={}){const scanner=await ensureScanner();const eventRef=push(ref(db,`${ROOT}/businessEvents/${profile.ownerId}`));const info=clientInfo();await set(eventRef,{id:eventRef.key,profileId:profile.id,profileSlug:profile.slug,eventType:clean(eventType,30),scannerUid:scanner.uid,timestamp:serverTimestamp(),...info,meta:{productId:clean(meta.productId,40),source:clean(meta.source,80)}});return eventRef.key;}
 export async function submitBusinessLead(profile,input){const scanner=await ensureScanner();const eventRef=push(ref(db,`${ROOT}/businessLeads/${profile.ownerId}`));const lead={id:eventRef.key,profileId:profile.id,profileSlug:profile.slug,scannerUid:scanner.uid,name:clean(input.name,100),phone:safeTel(input.phone),email:clean(input.email,160),message:clean(input.message,1000),productId:clean(input.productId,40),consent:input.consent===true,createdAt:serverTimestamp()};if(!lead.name||!lead.phone||!lead.consent)throw new Error("Name, phone and consent are required.");await set(eventRef,lead);await trackBusinessEvent(profile,"lead",{productId:lead.productId});return lead;}
 
