@@ -9,3 +9,12 @@ firebase-debug.log
 .env.*
 !.env.example
 secrets/
+.env.local
+.env.production
+.env.*.local
+node_modules
+.vercel
+*.pem
+*.key
+service-account*.json
+firebase-admin*.json
