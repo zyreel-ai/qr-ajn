@@ -9,3 +9,14 @@ node_modules/
 service-account*.json
 firebase-admin*.json
 .DS_Store
+
+.vercel
+.env*
+
+.env.v6
+
+.env.v6.local
+
+*firebase-adminsdk*.json
+
+*service-account*.json

@@ -167,7 +167,7 @@ function normalizeAdvanced(input={}){
   };
 }
 
-export async function createQr(user,input){
+async function createQrClientLegacy(user,input){
   user=requiredUser(user);
   const id=`qr_${crypto.randomUUID().replaceAll("-","").slice(0,18)}`;
   const isDynamic=input.is_dynamic===true;
@@ -181,7 +181,7 @@ export async function createQr(user,input){
   if(isDynamic) updates[`${ROOT}/publicLinks/${shortId}`]={shortId,ownerId:user.uid,qrId:id,destination:qr.destination_url,active:true,branding:qr.design||{},...advanced,scanCount:0,createdAt:Date.now(),updatedAt:Date.now()};
   await update(ref(db),updates);return qr;
 }
-export async function updateQr(user,id,patch){
+async function updateQrClientLegacy(user,id,patch){
   user=requiredUser(user);
   const qrRef=ref(db,`${pathForUser(user.uid,"qrs")}/${id}`);const snap=await get(qrRef);if(!snap.exists())throw new Error("QR code not found.");
   const current=snap.val();const advanced=normalizeAdvanced({...current,...patch});const next={...current,...patch,...advanced,id,updated_at:nowIso()};
@@ -204,7 +204,7 @@ export async function updateQr(user,id,patch){
   }
   await update(ref(db),updates);return next;
 }
-export async function deleteQr(user,id){
+async function deleteQrClientLegacy(user,id){
   user=requiredUser(user);const qrRef=ref(db,`${pathForUser(user.uid,"qrs")}/${id}`);const snap=await get(qrRef);if(!snap.exists())return false;
   const qr=snap.val(),events=(await get(ref(db,`${ROOT}/scanEvents/${user.uid}`))).val()||{};const updates={[`${pathForUser(user.uid,"qrs")}/${id}`]:null};
   if(qr.short_id)updates[`${ROOT}/publicLinks/${qr.short_id}`]=null;for(const [eventId,event] of Object.entries(events))if(event?.qrId===id)updates[`${ROOT}/scanEvents/${user.uid}/${eventId}`]=null;await update(ref(db),updates);return true;
@@ -231,7 +231,7 @@ function normalizeProfile(input,id,ownerId){
     updatedAt:Date.now(),createdAt:Number(input.createdAt||Date.now())
   };
 }
-export async function saveBusinessProfile(user,input,id=""){
+async function saveBusinessProfileClientLegacy(user,input,id=""){
   user=requiredUser(user);id=id||`bp_${crypto.randomUUID().replaceAll("-","").slice(0,16)}`;const existing=(await get(ref(db,`${pathForUser(user.uid,"businessProfiles")}/${id}`))).val()||{};const profile=normalizeProfile({...existing,...input},id,user.uid);
   if(!profile.slug)throw new Error("Enter a valid business name or profile URL.");
   const occupied=await get(ref(db,`${ROOT}/publicBusinessProfiles/${profile.slug}`));if(occupied.exists()&&occupied.val()?.id!==id)throw new Error("That public profile URL is already in use.");
@@ -239,7 +239,7 @@ export async function saveBusinessProfile(user,input,id=""){
   if(existing.slug&&existing.slug!==profile.slug)updates[`${ROOT}/publicBusinessProfiles/${existing.slug}`]=null;
   await update(ref(db),updates);return profile;
 }
-export async function deleteBusinessProfile(user,id){
+async function deleteBusinessProfileClientLegacy(user,id){
   user=requiredUser(user);const snap=await get(ref(db,`${pathForUser(user.uid,"businessProfiles")}/${id}`));if(!snap.exists())return false;const profile=snap.val();await update(ref(db),{[`${pathForUser(user.uid,"businessProfiles")}/${id}`]:null,[`${ROOT}/publicBusinessProfiles/${profile.slug}`]:null});return true;
 }
 export async function uploadBusinessAsset(user,profileId,slot,file){user=requiredUser(user);const safeSlot=clean(slot,30).replace(/[^a-z0-9_-]/gi,"")||"image";return uploadImage(user,file,`${ROOT}/business/${user.uid}/${profileId}/${safeSlot}`,3);}
@@ -299,3 +299,99 @@ export async function resetWorkspace(user){
 export async function resolvePublicLink(shortId){const snap=await get(ref(db,`${ROOT}/publicLinks/${shortId}`));if(!snap.exists())return null;const link=snap.val();if(link.active===false||!safeHttpUrl(link.destination))return null;const brandSnap=await get(ref(db,`${ROOT}/publicBranding/${link.ownerId}`));return {link,branding:{...DEFAULT_BRANDING,...(brandSnap.val()||{})}};}
 export async function trackPublicScan(shortId,link){const scanner=await ensureScanner();const eventRef=push(ref(db,`${ROOT}/scanEvents/${link.ownerId}`));const id=eventRef.key;const info=clientInfo();await set(eventRef,{id,qrId:link.qrId,shortId,scannerUid:scanner.uid,timestamp:serverTimestamp(),...info,location:"Not collected"});return id;}
 export { QRAJN };
+
+// QR AJN V6 SERVER ENFORCEMENT WRAPPERS
+async function v6Server(user,path,options={}){
+  user=requiredUser(user);
+  const token=await user.getIdToken();
+
+  const response=await fetch(path,{
+    ...options,
+    headers:{
+      "content-type":"application/json",
+      "authorization":`Bearer ${token}`,
+      ...(options.headers||{})
+    }
+  });
+
+  const body=await response.json().catch(()=>({}));
+
+  if(!response.ok){
+    const error=new Error(
+      body.error||`Server request failed (${response.status})`
+    );
+    error.code=body.code||"";
+    error.details=body.details;
+    throw error;
+  }
+
+  return body;
+}
+
+export async function createQr(user,input){
+  return (
+    await v6Server(
+      user,
+      "/api/v1/qrs",
+      {
+        method:"POST",
+        body:JSON.stringify(input)
+      }
+    )
+  ).qr;
+}
+
+export async function updateQr(user,id,patch){
+  return (
+    await v6Server(
+      user,
+      "/api/v1/qrs",
+      {
+        method:"PATCH",
+        body:JSON.stringify({id,...patch})
+      }
+    )
+  ).qr;
+}
+
+export async function deleteQr(user,id){
+  return (
+    await v6Server(
+      user,
+      "/api/v1/qrs",
+      {
+        method:"DELETE",
+        body:JSON.stringify({id})
+      }
+    )
+  ).ok;
+}
+
+export async function saveBusinessProfile(user,input,id=""){
+  const method=id?"PUT":"POST";
+  const body=id?{id,...input}:input;
+
+  return (
+    await v6Server(
+      user,
+      "/api/v1/profiles",
+      {
+        method,
+        body:JSON.stringify(body)
+      }
+    )
+  ).profile;
+}
+
+export async function deleteBusinessProfile(user,id){
+  return (
+    await v6Server(
+      user,
+      "/api/v1/profiles",
+      {
+        method:"DELETE",
+        body:JSON.stringify({id})
+      }
+    )
+  ).ok;
+}

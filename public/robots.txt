@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /analytics
+Disallow: /leads
+Disallow: /billing
+Disallow: /api-webhooks
+Disallow: /audit
+Disallow: /security
+Sitemap: https://www.qrajn.online/sitemap.xml
