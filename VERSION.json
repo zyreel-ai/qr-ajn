@@ -1,0 +1,12 @@
+{
+  "product": "QR AJN",
+  "version": "8.4.0",
+  "edition": "Professional QR + Public Profile + Live Analytics",
+  "auth": false,
+  "workspace": false,
+  "billing": false,
+  "premium": false,
+  "googleCloudFunctions": false,
+  "localPersistence": true,
+  "ui": "professional-v8.4"
+}

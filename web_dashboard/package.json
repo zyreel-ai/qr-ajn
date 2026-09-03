@@ -1,0 +1,12 @@
+{
+  "name": "qr-ajn-pro-ui",
+  "version": "8.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "start": "node server.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

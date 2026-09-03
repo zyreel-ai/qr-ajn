@@ -1,4 +1,0 @@
-import {clean} from "./security.js";
-export async function enqueue(db,ownerId,type,payload={},runAt=Date.now(),attempt=0){const ref=db.ref("qrajn/v6/jobs").push();await ref.set({id:ref.key,ownerId:clean(ownerId,128),type:clean(type,60),payload,status:"pending",attempt:Number(attempt||0),runAt:Number(runAt),createdAt:Date.now(),updatedAt:Date.now()});return ref.key;}
-export function retryDelay(attempt){return Math.min(3600000,Math.pow(2,Math.max(0,attempt))*30000);}
-export async function claimDueJobs(db,max=20){const snap=await db.ref("qrajn/v6/jobs").orderByChild("runAt").endAt(Date.now()).limitToFirst(max).get(),jobs=Object.values(snap.val()||{}).filter(j=>j.status==="pending"||j.status==="retry");for(const j of jobs)await db.ref(`qrajn/v6/jobs/${j.id}`).update({status:"running",updatedAt:Date.now()});return jobs;}

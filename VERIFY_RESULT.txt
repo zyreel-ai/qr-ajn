@@ -1,0 +1,15 @@
+QR AJN V8.4 VERIFY RESULT
+Generated: 2026-09-03T10:25:16Z
+
+
+> qr-ajn-pro-ui@8.4.0 verify
+> node scripts/verify.mjs
+
+PASS: V8.4 source files and JavaScript syntax
+PASS: professional soft-blue + OKLCH + typography design contract
+PASS: QR templates, customization, frames, exact-size exports, scan quality and professional preview contract
+PASS: profile templates, Published status, documents and private management contract
+PASS: real-time analytics, graphs, browser/device/activity UI contract
+PASS: no auth/workspace/billing/premium navigation and no personal demo identity
+PASS: unique DOM ids and all app DOM references resolve
+PASS: serialized mutation backend and V8.4 appearance schema contract

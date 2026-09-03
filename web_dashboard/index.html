@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f9ff">
+  <meta name="description" content="Create professional QR codes, publish a public QR AJN profile, share PDFs and track scans, views and clicks in real time — no account required.">
+  <link rel="canonical" href="https://qrajn.online/">
+  <meta property="og:title" content="QR AJN — QR Codes, Public Profiles & Live Analytics">
+  <meta property="og:description" content="Create QR codes and a public qrajn.online/yourname page with PDF sharing and live scan analytics.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://qrajn.online/">
+  <meta property="og:image" content="https://qrajn.online/og-cover.svg">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <title>QR AJN — QR Codes, Public Profiles & Live Analytics</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"QR AJN","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","url":"https://qrajn.online/","description":"Create QR codes, public microsite profiles, share PDFs and track scans, views and clicks."}</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="QR AJN home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span><strong>QR AJN</strong><small>QR · Profiles · Analytics</small></span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="/#create">Create QR</a>
+      <a href="/#profileCreate">Create Profile</a>
+      <button id="openManageButton" class="nav-button" type="button">Open Analytics</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="homeView" class="page-view">
+      <section class="hero shell reveal">
+        <div class="hero-copy">
+          <span class="eyebrow">NO ACCOUNT · PRIVATE MANAGEMENT · LIVE ANALYTICS</span>
+          <h1>Create QR codes<br><span>that do more.</span></h1>
+          <p>Create, customize and share QR codes, publish a clean <strong>qrajn.online/yourname</strong> page, attach PDFs and understand scans, views and actions.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#create">Create QR</a>
+            <a class="button secondary" href="#profileCreate">Create Profile</a>
+          </div>
+          <div class="trust-row"><span>Professional QR customization</span><span>Public profile + PDF links</span><span>Privacy-safe analytics</span></div>
+        </div>
+        <div class="hero-card" aria-hidden="true">
+          <div class="product-visual">
+            <div class="product-window-bar"><i></i><i></i><i></i><span>qrajn.online/yourname</span></div>
+            <div class="product-visual-grid">
+              <div class="visual-profile">
+                <div class="visual-cover"></div><div class="visual-avatar">YN</div>
+                <strong>Your Business</strong><small>Professional profile <b class="published-mini">✓ Published</b></small>
+                <div class="visual-actions"><i></i><i></i><i></i></div>
+              </div>
+              <div class="visual-analytics">
+                <div><small>QR SCANS</small><strong>0</strong></div><div><small>VIEWS</small><strong>0</strong></div>
+                <svg viewBox="0 0 260 90" aria-hidden="true"><path d="M8 70 C40 65,42 48,72 55 S112 28,138 40 S180 18,204 31 S230 20,252 14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+                <span>Live analytics starts with real activity — no demo numbers.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="value-strip shell reveal" aria-label="QR AJN workflow">
+        <div><b>1</b><span><strong>Create</strong><small>QR or public profile</small></span></div>
+        <div><b>2</b><span><strong>Customize</strong><small>Templates, colors and style</small></span></div>
+        <div><b>3</b><span><strong>Share</strong><small>QR, profile or PDF</small></span></div>
+        <div><b>4</b><span><strong>Analyze</strong><small>Scans, views and actions</small></span></div>
+      </section>
+
+      <section id="create" class="creator shell reveal">
+        <div class="section-heading">
+          <span class="eyebrow">QR CREATOR</span>
+          <h2>Design a QR that looks professional.</h2>
+          <p>Use a static QR for direct content or a trackable QR for live scan analytics. Customize the appearance without changing the encoded content.</p>
+        </div>
+        <div class="mode-switch" role="tablist" aria-label="QR mode">
+          <button id="staticMode" class="mode-tab active" role="tab" aria-selected="true" type="button"><strong>Static QR</strong><span>Direct content · no tracking</span></button>
+          <button id="trackMode" class="mode-tab" role="tab" aria-selected="false" type="button"><strong>Trackable QR</strong><span>Redirect + live scan analytics</span></button>
+        </div>
+
+        <div class="creator-grid">
+          <section class="panel creator-panel">
+            <div class="creator-tabs" role="tablist" aria-label="QR editor sections">
+              <button id="contentTab" class="creator-tab active" type="button" aria-selected="true">1 <span>Content</span></button>
+              <button id="customizeTab" class="creator-tab" type="button" aria-selected="false">2 <span>Customize</span></button>
+              <button id="advancedTab" class="creator-tab" type="button" aria-selected="false">3 <span>Advanced</span></button>
+            </div>
+
+            <div id="contentPanel" class="creator-tab-panel">
+              <div id="staticFields">
+                <label>QR type<select id="qrType"><option value="url">Website URL</option><option value="text">Text</option><option value="wifi">Wi-Fi</option><option value="phone">Phone</option><option value="sms">SMS</option><option value="email">Email</option><option value="whatsapp">WhatsApp</option><option value="location">Location</option><option value="vcard">Contact / vCard</option></select></label>
+                <div id="payloadFields"></div>
+              </div>
+              <div id="trackFields" class="hidden">
+                <div class="notice"><strong>Trackable QR</strong><span>Each scan reaches QR AJN, records one scan event and then redirects to the destination.</span></div>
+                <label>QR name<input id="trackName" maxlength="100" placeholder="My trackable QR"></label>
+                <label>Destination website<input id="trackDestination" type="url" maxlength="2048" placeholder="https://example.com/page"></label>
+              </div>
+            </div>
+
+            <div id="customizePanel" class="creator-tab-panel hidden">
+              <div class="control-group">
+                <div class="control-head"><div><small>QUICK START</small><h3>QR templates</h3></div><button id="resetQrDesign" class="text-button" type="button">Reset</button></div>
+                <div class="template-grid qr-template-grid" id="qrTemplateGrid">
+                  <button type="button" class="template-card active" data-qr-template="minimal"><i class="template-swatch minimal"></i><strong>Minimal</strong><small>Clean & universal</small></button>
+                  <button type="button" class="template-card" data-qr-template="business"><i class="template-swatch business"></i><strong>Business</strong><small>Strong navy</small></button>
+                  <button type="button" class="template-card" data-qr-template="professional"><i class="template-swatch professional"></i><strong>Professional</strong><small>Graphite + rounded</small></button>
+                  <button type="button" class="template-card" data-qr-template="social"><i class="template-swatch social"></i><strong>Social</strong><small>Indigo + dots</small></button>
+                  <button type="button" class="template-card" data-qr-template="ocean"><i class="template-swatch ocean"></i><strong>Ocean</strong><small>Deep blue</small></button>
+                  <button type="button" class="template-card" data-qr-template="emerald"><i class="template-swatch emerald"></i><strong>Emerald</strong><small>Fresh & modern</small></button>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-head"><div><small>COLOR</small><h3>Palette</h3></div></div>
+                <div id="qrColorPresets" class="color-presets">
+                  <button type="button" title="Midnight" data-fg="#0f172a" data-eye="#0f172a" data-bg="#ffffff" style="--sw:#0f172a"></button>
+                  <button type="button" title="Indigo" data-fg="#4f46e5" data-eye="#312e81" data-bg="#ffffff" style="--sw:#4f46e5"></button>
+                  <button type="button" title="Ocean" data-fg="#075985" data-eye="#0c4a6e" data-bg="#f8fdff" style="--sw:#075985"></button>
+                  <button type="button" title="Emerald" data-fg="#047857" data-eye="#064e3b" data-bg="#ffffff" style="--sw:#047857"></button>
+                  <button type="button" title="Graphite" data-fg="#27272a" data-eye="#18181b" data-bg="#fafafa" style="--sw:#27272a"></button>
+                  <button type="button" title="Royal" data-fg="#1d4ed8" data-eye="#1e3a8a" data-bg="#ffffff" style="--sw:#1d4ed8"></button>
+                  <button type="button" title="Berry" data-fg="#9f1239" data-eye="#881337" data-bg="#fffafb" style="--sw:#9f1239"></button>
+                </div>
+                <div class="design-grid compact">
+                  <label>QR color<input id="foreground" type="color" value="#0f172a"></label>
+                  <label>Eye color<input id="eyeColor" type="color" value="#0f172a"></label>
+                  <label>Background<input id="background" type="color" value="#ffffff"></label>
+                  <label class="switch-label">Transparent background<input id="transparentBackground" type="checkbox"><span class="mini-switch"></span></label>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="design-grid compact">
+                  <label>Module style<select id="moduleStyle"><option value="square">Square</option><option value="rounded">Rounded</option><option value="dots">Dots</option></select></label>
+                  <label>Eye style<select id="eyeStyle"><option value="square">Square</option><option value="rounded">Rounded</option></select></label>
+                  <label>Center logo<input id="qrLogo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                  <label>Logo size <span id="logoSizeValue" class="range-value">16%</span><input id="logoSize" type="range" min="10" max="20" step="1" value="16"></label>
+                </div>
+                <p class="helper-note">For a logo, QR AJN automatically recommends high error correction and limits the logo size for scan reliability.</p>
+              </div>
+            </div>
+
+            <div id="advancedPanel" class="creator-tab-panel hidden">
+              <div class="control-group">
+                <div class="design-grid compact">
+                  <label>Error correction<select id="ecc"><option>M</option><option>Q</option><option>H</option><option>L</option></select></label>
+                  <label>Quiet zone <span id="marginValue" class="range-value">4 modules</span><input id="qrMargin" type="range" min="2" max="8" step="1" value="4"></label>
+                  <label>Export size<select id="qrSize"><option value="640">640 px</option><option value="1024" selected>1024 px</option><option value="1600">1600 px</option><option value="2048">2048 px</option></select></label>
+                  <label>Preview surface<select id="previewSurface"><option value="light">Light</option><option value="dark">Dark</option><option value="card">Card</option><option value="phone">Phone</option></select></label>
+                  <label>Frame<select id="frameStyle"><option value="none">None</option><option value="rounded">Rounded card</option><option value="label">Scan label</option></select></label>
+                  <label>Frame text<input id="frameText" maxlength="24" value="SCAN ME" placeholder="SCAN ME"></label>
+                </div>
+                <div class="advanced-note"><strong>Reliable by design</strong><p>QR AJN checks contrast, quiet zone, logo size and error correction before generation. Templates change appearance only — never the destination.</p></div>
+              </div>
+            </div>
+
+            <div id="contrastWarning" class="warning hidden" role="alert">Use stronger foreground/background contrast for reliable scanning.</div>
+            <button id="generateButton" class="button primary full creator-generate" type="button">Generate QR</button>
+            <p id="creatorMessage" class="message" aria-live="polite"></p>
+          </section>
+
+          <section class="panel preview-panel">
+            <div class="panel-head"><div><small>LIVE PREVIEW</small><h3 id="previewTitle">Ready to create</h3></div><span id="qrStatus" class="status">WAITING</span></div>
+            <div id="qrPreviewStage" class="qr-preview-stage surface-light">
+              <div id="qrPreview" class="qr-preview"><div class="qr-placeholder"><span class="qr-placeholder-icon">▦</span><strong>Your QR appears here</strong><small>Configure the content and generate when ready.</small></div></div>
+            </div>
+            <div class="scan-quality" id="scanQualityCard"><div><span id="scanQualityDot" class="quality-dot neutral"></span><div><small>SCAN QUALITY</small><strong id="scanQualityLabel">Waiting for QR</strong></div></div><span id="scanQualityDetail">Use a high-contrast design for reliable scanning.</span></div>
+            <div class="preview-actions"><button id="downloadPng" class="button secondary" type="button" disabled>PNG</button><button id="downloadSvg" class="button secondary" type="button" disabled>SVG</button><button id="copyQrContent" class="button secondary" type="button" disabled>Copy content</button><button id="shareQr" class="button secondary" type="button" disabled>Share</button></div>
+            <div id="manageSuccess" class="success-card hidden"><small>PRIVATE ANALYTICS LINK</small><strong>Save this private link</strong><p>Anyone with this link can view analytics and manage this trackable QR. Keep it private.</p><div class="copy-row"><input id="manageUrlOutput" readonly><button id="copyManageUrl" class="button primary" type="button">Copy</button></div><a id="openAnalyticsLink" class="button secondary full" href="#">Open analytics</a></div>
+          </section>
+        </div>
+        <div class="mobile-sticky-actions"><button id="mobilePreviewQr" class="button secondary" type="button">Preview</button><button id="mobileGenerateQr" class="button primary" type="button">Generate QR</button></div>
+      </section>
+
+      <section id="profileCreate" class="profile-create shell reveal">
+        <div class="section-heading">
+          <span class="eyebrow">PUBLIC PROFILE</span>
+          <h2>Build a professional qrajn.online page.</h2>
+          <p>Choose a permanent public link, add contact details, social links and PDFs, then share the automatically generated profile QR.</p>
+        </div>
+        <div id="profileDraftBanner" class="draft-banner hidden"><div><strong>Unsaved profile draft found</strong><span>Restore the fields from your previous session?</span></div><div><button id="restoreProfileDraft" class="button secondary" type="button">Restore</button><button id="discardProfileDraft" class="button tertiary" type="button">Discard</button></div></div>
+        <div class="profile-builder">
+          <form id="profileCreateForm" class="panel profile-form" novalidate>
+            <div class="builder-section appearance-section">
+              <div class="builder-title"><b>1</b><span><strong>Choose a profile style</strong><small>Templates only change presentation. Your content and public URL stay yours.</small></span></div>
+              <div id="profileTemplateGrid" class="template-grid profile-template-grid">
+                <button class="template-card active" type="button" data-profile-template="minimal"><i class="profile-template-preview minimal"></i><strong>Minimal</strong><small>Clean and focused</small></button>
+                <button class="template-card" type="button" data-profile-template="professional"><i class="profile-template-preview professional"></i><strong>Professional</strong><small>Resume & services</small></button>
+                <button class="template-card" type="button" data-profile-template="business"><i class="profile-template-preview business"></i><strong>Business</strong><small>Contact & documents</small></button>
+                <button class="template-card" type="button" data-profile-template="portfolio"><i class="profile-template-preview portfolio"></i><strong>Portfolio</strong><small>Personal showcase</small></button>
+                <button class="template-card" type="button" data-profile-template="restaurant"><i class="profile-template-preview restaurant"></i><strong>Restaurant</strong><small>Menu & location</small></button>
+                <button class="template-card" type="button" data-profile-template="creator"><i class="profile-template-preview creator"></i><strong>Creator</strong><small>Links & social</small></button>
+              </div>
+              <div class="profile-appearance-row"><label>Accent color<select id="profileAccent"><option value="indigo">Indigo</option><option value="ocean">Ocean</option><option value="emerald">Emerald</option><option value="graphite">Graphite</option><option value="slate">Slate</option><option value="rose">Rose</option><option value="amber">Amber</option></select></label><input id="profileTemplate" type="hidden" value="minimal"></div>
+            </div>
+
+            <div class="builder-section"><div class="builder-title"><b>2</b><span><strong>Your public link</strong><small>Choose a permanent name. It cannot be changed later.</small></span></div><label>Custom link<div class="slug-input"><span>qrajn.online/</span><input id="profileSlug" maxlength="40" placeholder="yourname" autocomplete="off"></div><small id="slugHint" class="field-hint">Lowercase letters, numbers and hyphens. 3–40 characters.</small></label></div>
+            <div class="builder-section"><div class="builder-title"><b>3</b><span><strong>Profile details</strong><small>What visitors should know first.</small></span></div><div class="form-row"><label>Name / Business name<input id="profileName" maxlength="100" required placeholder="Your Business"></label><label>Category<input id="profileCategory" maxlength="80" placeholder="Professional Services"></label></div><label>Short description<input id="profileTagline" maxlength="160" placeholder="A short line explaining what you offer"></label><label>About<textarea id="profileAbout" maxlength="2000" rows="5" placeholder="Tell visitors what you do and how you can help."></textarea></label></div>
+            <div class="builder-section"><div class="builder-title"><b>4</b><span><strong>Contact</strong><small>Only add what you want public.</small></span></div><div class="form-row"><label>Phone<input id="profilePhone" maxlength="40" placeholder="+00 00000 00000"></label><label>WhatsApp<input id="profileWhatsapp" maxlength="40" placeholder="000000000000"></label></div><div class="form-row"><label>Email<input id="profileEmail" type="email" maxlength="254" placeholder="hello@example.com"></label><label>Website<input id="profileWebsite" type="url" maxlength="2048" placeholder="https://example.com"></label></div><label>Address<textarea id="profileAddress" maxlength="300" rows="3" placeholder="Business address"></textarea></label><div class="form-row"><label>Google Maps link<input id="profileMaps" type="url" maxlength="2048" placeholder="https://maps.google.com/..."></label><label>Working hours<input id="profileHours" maxlength="300" placeholder="Mon–Sat · 9:00 AM–7:00 PM"></label></div></div>
+            <details class="builder-section"><summary>Social links</summary><div class="social-grid"><label>Instagram<input id="socialInstagram" type="url" placeholder="https://instagram.com/..."></label><label>Facebook<input id="socialFacebook" type="url" placeholder="https://facebook.com/..."></label><label>YouTube<input id="socialYoutube" type="url" placeholder="https://youtube.com/..."></label><label>LinkedIn<input id="socialLinkedin" type="url" placeholder="https://linkedin.com/in/..."></label><label>X / Twitter<input id="socialX" type="url" placeholder="https://x.com/..."></label><label>Telegram<input id="socialTelegram" type="url" placeholder="https://t.me/..."></label></div></details>
+            <details class="builder-section"><summary>Other links</summary><div id="customLinksEditor" class="custom-links-editor"></div><button id="addCustomLink" class="button tertiary" type="button">+ Add link</button></details>
+            <div class="builder-section"><div class="builder-title"><b>5</b><span><strong>Images</strong><small>Optional. Uploads are added after the profile is created.</small></span></div><div class="form-row"><label>Profile photo / logo<input id="profileLogo" type="file" accept="image/png,image/jpeg,image/webp"></label><label>Cover image<input id="profileCover" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
+            <div class="profile-submit-row"><button class="button primary" type="submit">Create public profile</button><span>No account required.</span></div><p id="profileCreateMessage" class="message" aria-live="polite"></p>
+          </form>
+
+          <aside class="profile-preview-wrap">
+            <div class="preview-label"><span>LIVE PREVIEW</span><small>Updates while you type</small></div>
+            <div id="profileLivePreview" class="phone-preview template-minimal accent-indigo">
+              <div id="previewCover" class="phone-cover"></div><div class="phone-avatar" id="previewAvatar">YN</div>
+              <div class="preview-name-line"><h3 id="previewProfileName">Your Name</h3><span class="published-badge">✓ Published</span></div>
+              <span id="previewCategory">Your category</span><p id="previewTagline">Your short description will appear here.</p>
+              <div class="phone-buttons"><i>Call</i><i>WhatsApp</i><i>Email</i></div>
+              <div class="phone-card"><b>About</b><p id="previewAbout">Add a short introduction about your profile or business.</p></div>
+              <div class="phone-card"><b>Documents</b><div class="fake-doc"><span>PDF</span><small>Your PDF links appear here</small></div></div>
+              <div class="phone-footer">qrajn.online/<b id="previewSlug">yourname</b></div>
+            </div>
+          </aside>
+        </div>
+        <div id="profileCreatedCard" class="panel profile-created hidden"><div><span class="eyebrow">PROFILE CREATED</span><h3>Your public page is ready.</h3><p>Save the private management link. It is the only key for editing, PDFs and analytics.</p></div><div id="profileCreatedQr" class="created-qr"></div><div class="created-links"><label>Public link<div class="copy-row"><input id="createdPublicUrl" readonly><button id="copyCreatedPublic" class="button secondary" type="button">Copy</button></div></label><label>Private management link<div class="copy-row"><input id="createdManageUrl" readonly><button id="copyCreatedManage" class="button primary" type="button">Copy</button></div></label><div class="inline-actions"><a id="openCreatedPublic" class="button secondary" target="_blank">Open profile</a><a id="openCreatedManage" class="button secondary">Open analytics</a><button id="downloadCreatedProfileQr" class="button secondary" type="button">Download profile QR</button></div></div></div>
+      </section>
+
+      <section id="how" class="how shell reveal">
+        <div class="section-heading"><span class="eyebrow">HOW IT WORKS</span><h2>Create → Share → Scan → Analyze.</h2></div>
+        <div class="steps"><article><b>1</b><h3>Create</h3><p>Build a QR or choose a permanent public profile link.</p></article><article><b>2</b><h3>Share</h3><p>Share the QR, qrajn.online profile or clean PDF link.</p></article><article><b>3</b><h3>Understand</h3><p>See real scans, profile views, clicks, devices and document activity.</p></article></div>
+      </section>
+    </section>
+
+    <section id="publicProfileView" class="page-view hidden profile-public shell">
+      <div id="publicProfileError" class="error-card hidden"></div>
+      <article id="publicProfileCard" class="public-profile-card hidden template-minimal accent-indigo">
+        <div id="publicCover" class="public-cover"></div>
+        <div class="public-main">
+          <div id="publicLogo" class="public-logo">YN</div>
+          <div class="public-head"><span id="publicCategory" class="profile-chip"></span><div class="public-name-line"><h1 id="publicName">Your Profile</h1><span class="published-badge">✓ Published</span></div><p id="publicTagline"></p></div>
+          <div class="public-primary-actions" id="publicPrimaryActions"></div>
+          <section id="publicAboutSection" class="profile-section"><h2>About</h2><p id="publicAbout"></p></section>
+          <section id="publicDetailsSection" class="profile-section"><h2>Details</h2><div id="publicDetails" class="detail-list"></div></section>
+          <section id="publicSocialSection" class="profile-section"><h2>Links</h2><div id="publicSocials" class="link-grid"></div></section>
+          <section id="publicDocumentsSection" class="profile-section"><div class="section-line"><h2>Documents</h2><span>Public PDF links</span></div><div id="publicDocuments" class="document-grid"></div></section>
+          <section class="profile-section share-section"><div><h2>Share this profile</h2><p>Use the profile QR or send the clean public link.</p></div><div id="publicQr" class="public-qr"></div><div class="share-actions"><button id="sharePublicProfile" class="button primary" type="button">Share profile</button><button id="copyPublicProfile" class="button secondary" type="button">Copy link</button><button id="downloadPublicQr" class="button secondary" type="button">Download QR</button></div></section>
+        </div>
+      </article>
+    </section>
+
+    <section id="qrManageView" class="page-view hidden manage-shell shell">
+      <div class="manage-top"><div><a class="back-link" href="/">← QR AJN home</a><span class="eyebrow">TRACKABLE QR ANALYTICS</span><h1 id="manageHeading">QR analytics</h1><p id="manageSubheading">Loading...</p></div><div class="live-pill"><i></i><span id="manageLiveText">Live · updating</span></div></div>
+      <div id="manageError" class="error-card hidden"></div>
+      <div id="manageContent" class="hidden">
+        <section class="panel manage-summary"><div class="qr-mini"><div id="manageQrCanvas"></div></div><div class="manage-meta"><small>TRACKABLE QR</small><h2 id="manageQrName">—</h2><a id="manageDestinationLink" target="_blank" rel="noopener"></a><div class="inline-actions"><button id="copyManagedQrLink" class="button secondary" type="button">Copy QR link</button><button id="downloadManagedPng" class="button secondary" type="button">Download PNG</button></div></div><label class="toggle"><input id="activeToggle" type="checkbox"><span></span><b id="activeLabel">Active</b></label></section>
+        <div class="metric-grid four"><article><small>Total scans</small><strong id="metricTotal">0</strong><span>All time</span></article><article><small>Today</small><strong id="metricToday">0</strong><span>Since midnight</span></article><article><small>30 days</small><strong id="metric30">0</strong><span>Recent scans</span></article><article><small>Approx. unique</small><strong id="metricUnique">0</strong><span>Privacy-safe estimate</span></article><span id="metric7" class="hidden">0</span></div>
+        <div class="analytics-grid primary-analytics"><section class="panel chart-panel"><div class="panel-head"><div><small id="qrRangeLabel">30 DAYS</small><h3>Scan activity</h3></div><div class="chart-range" role="tablist" aria-label="QR analytics range"><button id="qrRangeToday" type="button">Today</button><button id="qrRange7" type="button">7D</button><button id="qrRange30" class="active" type="button">30D</button></div></div><div id="dailyChart" class="line-chart"></div></section><section class="panel"><div class="panel-head"><div><small>DEVICES</small><h3>Scan mix</h3></div></div><div id="deviceBreakdown" class="breakdown"></div><div class="panel-divider"></div><div class="panel-head compact"><div><small>BROWSERS</small><h3>Top browsers</h3></div></div><div id="qrBrowserBreakdown" class="breakdown"></div></section></div>
+        <section class="panel edit-panel"><div><small>EDIT WITHOUT CHANGING QR</small><h3>Destination</h3><p>The same printed QR keeps working after edits.</p></div><form id="editQrForm"><label>Name<input id="editName" maxlength="100"></label><label>Destination<input id="editDestination" type="url" maxlength="2048"></label><button class="button primary" type="submit">Save</button><button id="deleteManagedQr" class="button danger" type="button">Delete</button></form><p id="manageMessage" class="message"></p></section>
+      </div>
+    </section>
+
+    <section id="profileManageView" class="page-view hidden manage-shell shell">
+      <div class="manage-top"><div><a class="back-link" href="/">← QR AJN home</a><span class="eyebrow">PRIVATE PROFILE MANAGEMENT</span><h1 id="profileManageHeading">Profile analytics</h1><p id="profileManageSubheading">Loading...</p></div><div class="live-pill"><i></i><span id="profileManageLiveText">Live · updating</span></div></div>
+      <div id="profileManageError" class="error-card hidden"></div>
+      <div id="profileManageContent" class="hidden">
+        <section class="panel profile-manage-summary"><div id="profileManageQr" class="qr-mini"></div><div class="manage-meta"><small>PUBLIC PROFILE</small><div class="manage-name-row"><h2 id="profileManageName">—</h2><span class="published-badge">✓ Published</span></div><a id="profileManagePublicLink" target="_blank" rel="noopener"></a><div class="inline-actions"><button id="copyProfilePublicLink" class="button secondary" type="button">Copy public link</button><button id="shareManagedProfile" class="button secondary" type="button">Share</button><button id="downloadManagedProfileQr" class="button secondary" type="button">Download QR</button></div></div><label class="toggle"><input id="profileActiveToggle" type="checkbox"><span></span><b id="profileActiveLabel">Active</b></label></section>
+        <div class="metric-grid four profile-metrics"><article><small>QR scans</small><strong id="pmScans">0</strong><span id="pmScansSub">0 today</span></article><article><small>Profile views</small><strong id="pmViews">0</strong><span id="pmViewsSub">0 today</span></article><article><small>Actions</small><strong id="pmClicks">0</strong><span>Contact + links</span></article><article><small>Approx. unique</small><strong id="pmUnique">0</strong><span>Privacy-safe estimate</span></article><article class="hidden"><small>PDF views</small><strong id="pmPdfViews">0</strong></article></div>
+
+        <div class="analytics-grid primary-analytics"><section class="panel chart-panel"><div class="panel-head analytics-head"><div><small id="profileRangeLabel">30 DAYS</small><h3>Activity trend</h3></div><div class="analytics-controls"><div class="chart-tabs" role="tablist" aria-label="Profile analytics metric"><button id="profileChartScans" class="active" type="button">Scans</button><button id="profileChartViews" type="button">Views</button><button id="profileChartActions" type="button">Actions</button></div><div class="chart-range" role="tablist" aria-label="Profile analytics range"><button id="profileRangeToday" type="button">Today</button><button id="profileRange7" type="button">7D</button><button id="profileRange30" class="active" type="button">30D</button></div></div></div><div id="profileDailyChart" class="line-chart"></div></section><section class="panel"><div class="panel-head"><div><small>TOP ACTIONS</small><h3>What people use</h3></div></div><div id="profileTopActions" class="breakdown"></div></section></div>
+        <div class="analytics-grid"><section class="panel"><div class="panel-head"><div><small>DEVICES</small><h3>Visitor mix</h3></div></div><div id="profileDeviceBreakdown" class="breakdown"></div><div class="panel-divider"></div><div class="panel-head compact"><div><small>BROWSERS</small><h3>Top browsers</h3></div></div><div id="profileBrowserBreakdown" class="breakdown"></div></section><section class="panel"><div class="panel-head"><div><small>RECENT</small><h3>Latest activity</h3></div></div><div id="profileRecent" class="recent-list"></div></section></div>
+
+        <section class="panel profile-edit-panel"><div class="panel-head"><div><small>EDIT PROFILE</small><h3>Public details</h3></div><div class="manage-edit-status"><span id="fixedProfileSlug" class="profile-chip"></span><span id="profileUnsavedBadge" class="unsaved-badge hidden">Unsaved changes</span></div></div><form id="profileEditForm" class="profile-edit-form"><div class="form-row"><label>Name<input id="editProfileName" maxlength="100"></label><label>Category<input id="editProfileCategory" maxlength="80"></label></div><label>Short description<input id="editProfileTagline" maxlength="160"></label><label>About<textarea id="editProfileAbout" maxlength="2000" rows="5"></textarea></label><div class="form-row"><label>Phone<input id="editProfilePhone" maxlength="40"></label><label>WhatsApp<input id="editProfileWhatsapp" maxlength="40"></label></div><div class="form-row"><label>Email<input id="editProfileEmail" type="email" maxlength="254"></label><label>Website<input id="editProfileWebsite" type="url" maxlength="2048"></label></div><label>Address<textarea id="editProfileAddress" maxlength="300" rows="3"></textarea></label><div class="form-row"><label>Google Maps link<input id="editProfileMaps" type="url" maxlength="2048"></label><label>Working hours<input id="editProfileHours" maxlength="300"></label></div><details open><summary>Appearance</summary><div class="form-row"><label>Template<select id="editProfileTemplate"><option value="minimal">Minimal</option><option value="professional">Professional</option><option value="business">Business</option><option value="portfolio">Portfolio</option><option value="restaurant">Restaurant</option><option value="creator">Creator</option></select></label><label>Accent<select id="editProfileAccent"><option value="indigo">Indigo</option><option value="ocean">Ocean</option><option value="emerald">Emerald</option><option value="graphite">Graphite</option><option value="slate">Slate</option><option value="rose">Rose</option><option value="amber">Amber</option></select></label></div></details><details><summary>Social links</summary><div class="social-grid"><label>Instagram<input id="editSocialInstagram" type="url"></label><label>Facebook<input id="editSocialFacebook" type="url"></label><label>YouTube<input id="editSocialYoutube" type="url"></label><label>LinkedIn<input id="editSocialLinkedin" type="url"></label><label>X / Twitter<input id="editSocialX" type="url"></label><label>Telegram<input id="editSocialTelegram" type="url"></label></div></details><details><summary>Other links</summary><div id="editCustomLinksEditor" class="custom-links-editor"></div><button id="addEditCustomLink" class="button tertiary" type="button">+ Add link</button></details><div class="form-actions"><button class="button primary" type="submit">Save profile</button><a id="previewManagedProfile" class="button secondary" target="_blank">Preview public page</a></div></form><p id="profileEditMessage" class="message"></p></section>
+
+        <section class="panel media-panel"><div class="panel-head"><div><small>PROFILE IMAGES</small><h3>Logo and cover</h3></div></div><div class="media-grid"><div><div id="managedLogoPreview" class="media-preview square">No logo</div><label>Upload logo<input id="managedLogoFile" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="inline-actions"><button id="uploadManagedLogo" class="button secondary" type="button">Upload</button><button id="removeManagedLogo" class="button tertiary" type="button">Remove</button></div></div><div><div id="managedCoverPreview" class="media-preview cover">No cover</div><label>Upload cover<input id="managedCoverFile" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="inline-actions"><button id="uploadManagedCover" class="button secondary" type="button">Upload</button><button id="removeManagedCover" class="button tertiary" type="button">Remove</button></div></div></div><p id="mediaMessage" class="message"></p></section>
+
+        <section class="panel documents-panel"><div class="panel-head"><div><small>PDF SHARING</small><h3>Public documents</h3><p>Each PDF gets a clean link like <strong>qrajn.online/yourname/brochure</strong>.</p></div></div><form id="documentUploadForm" class="document-upload-form"><label>PDF title<input id="documentTitle" maxlength="100" placeholder="Company Brochure"></label><label>Link name<input id="documentSlug" maxlength="60" placeholder="brochure"></label><label>PDF file<input id="documentFile" type="file" accept="application/pdf"></label><button class="button primary" type="submit">Upload PDF</button></form><p id="documentMessage" class="message"></p><div id="managedDocuments" class="managed-documents"></div></section>
+
+        <section class="panel danger-zone"><div><small>PROFILE CONTROL</small><h3>Delete profile</h3><p>Deleting permanently removes this profile, its analytics, images and PDFs.</p></div><button id="deleteManagedProfile" class="button danger" type="button">Delete profile</button></section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="manageDialog"><form method="dialog"><h2>Open private analytics</h2><p>Paste the private management link saved when you created a trackable QR or public profile.</p><label>Private management link<input id="manageLinkInput" type="url" placeholder="http://.../manage/..."></label><p id="manageDialogMessage" class="message"></p><div class="dialog-actions"><button class="button tertiary" value="cancel">Cancel</button><button id="openPastedManageLink" class="button primary" value="default" type="button">Open</button></div></form></dialog>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <footer><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span class="footer-note">QR AJN · Create · Share · Analyze</span></footer>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

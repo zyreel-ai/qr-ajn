@@ -1,0 +1,10 @@
+{
+  "schema": 4,
+  "meta": {
+    "installSecret": ""
+  },
+  "qrs": [],
+  "scans": [],
+  "profiles": [],
+  "profileEvents": []
+}

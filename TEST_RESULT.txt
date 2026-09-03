@@ -1,0 +1,113 @@
+QR AJN V8.4 AUTOMATED TEST RESULT
+Generated: 2026-09-03T10:25:16Z
+
+
+> qr-ajn-pro-ui@8.4.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: QR encoder handles URL, Telugu and all ECC levels
+ok 1 - QR encoder handles URL, Telugu and all ECC levels
+  ---
+  duration_ms: 29.31827
+  type: 'test'
+  ...
+# Subtest: QR SVG exports, transparent backgrounds, eye styling and contrast guard work
+ok 2 - QR SVG exports, transparent backgrounds, eye styling and contrast guard work
+  ---
+  duration_ms: 1.612639
+  type: 'test'
+  ...
+# Subtest: health reports simplified profile analytics edition
+ok 3 - health reports simplified profile analytics edition
+  ---
+  duration_ms: 72.728058
+  type: 'test'
+  ...
+# Subtest: profile creation validates clean unique and reserved slugs
+ok 4 - profile creation validates clean unique and reserved slugs
+  ---
+  duration_ms: 17.941273
+  type: 'test'
+  ...
+# Subtest: profile appearance template and accent persist safely
+ok 5 - profile appearance template and accent persist safely
+  ---
+  duration_ms: 11.279881
+  type: 'test'
+  ...
+# Subtest: public profile HTML has profile-specific SEO metadata
+ok 6 - public profile HTML has profile-specific SEO metadata
+  ---
+  duration_ms: 8.704758
+  type: 'test'
+  ...
+# Subtest: public profile view, QR scan and click analytics are separate
+ok 7 - public profile view, QR scan and click analytics are separate
+  ---
+  duration_ms: 13.979641
+  type: 'test'
+  ...
+# Subtest: profile edit keeps public slug and QR route stable
+ok 8 - profile edit keeps public slug and QR route stable
+  ---
+  duration_ms: 4.591698
+  type: 'test'
+  ...
+# Subtest: wrong management token is rejected
+ok 9 - wrong management token is rejected
+  ---
+  duration_ms: 5.873752
+  type: 'test'
+  ...
+# Subtest: logo upload and public media route work
+ok 10 - logo upload and public media route work
+  ---
+  duration_ms: 9.129575
+  type: 'test'
+  ...
+# Subtest: PDF gets clean profile path, view/share analytics and delete
+ok 11 - PDF gets clean profile path, view/share analytics and delete
+  ---
+  duration_ms: 20.721624
+  type: 'test'
+  ...
+# Subtest: profile pause blocks public page and QR, resume restores it
+ok 12 - profile pause blocks public page and QR, resume restores it
+  ---
+  duration_ms: 11.305298
+  type: 'test'
+  ...
+# Subtest: profile delete removes resource and analytics
+ok 13 - profile delete removes resource and analytics
+  ---
+  duration_ms: 6.978088
+  type: 'test'
+  ...
+# Subtest: existing trackable QR flow remains functional
+ok 14 - existing trackable QR flow remains functional
+  ---
+  duration_ms: 6.874422
+  type: 'test'
+  ...
+# Subtest: concurrent scans are serialized without lost counts
+ok 15 - concurrent scans are serialized without lost counts
+  ---
+  duration_ms: 17.06913
+  type: 'test'
+  ...
+# Subtest: unsafe URL schemes are rejected
+ok 16 - unsafe URL schemes are rejected
+  ---
+  duration_ms: 2.318458
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 296.925131

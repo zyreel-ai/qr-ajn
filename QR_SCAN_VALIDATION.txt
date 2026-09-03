@@ -1,0 +1,13 @@
+QR AJN V8.4 QR SCAN VALIDATION
+OpenCV QRCodeDetector validation against https://qrajn.online/sample-profile
+
+PASS: modules=square, eyes=square, center_logo=no
+PASS: modules=square, eyes=square, center_logo=yes
+PASS: modules=rounded, eyes=rounded, center_logo=no
+PASS: modules=rounded, eyes=rounded, center_logo=yes
+PASS: modules=dots, eyes=square, center_logo=no
+PASS: modules=dots, eyes=square, center_logo=yes
+PASS: modules=dots, eyes=rounded, center_logo=no
+PASS: modules=dots, eyes=rounded, center_logo=yes
+
+Result: 8/8 variants decoded successfully.
