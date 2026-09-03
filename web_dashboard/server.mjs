@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(root, 'data');
+const dataDir = process.env.VERCEL ? path.join('/tmp', 'qr-ajn', 'data') : path.join(root, 'data');
 const uploadsDir = path.join(dataDir, 'uploads');
 const dbFile = process.env.QR_AJN_DATA_FILE ? path.resolve(process.env.QR_AJN_DATA_FILE) : path.join(dataDir, 'local-db.json');
 const port = Number(process.env.PORT || 4173);
@@ -195,7 +195,7 @@ const server = http.createServer(async (req,res) => {
   }
 });
 
-server.listen(port,host,()=>{
+server.listen(port,process.env.VERCEL ? undefined : host,()=>{
   console.log('');
   console.log('============================================================');
   console.log(' QR AJN 8.4 :: PROFESSIONAL QR + PROFILES + LIVE ANALYTICS');

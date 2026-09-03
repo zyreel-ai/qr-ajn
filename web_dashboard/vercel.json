@@ -1,0 +1,36 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.mjs",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "index.html",
+          "styles.css",
+          "app.js",
+          "qr-encoder.js",
+          "privacy.html",
+          "terms.html",
+          "contact.html",
+          "about.html",
+          "404.html",
+          "robots.txt",
+          "sitemap.xml",
+          "ads.txt",
+          "favicon.svg",
+          "manifest.webmanifest",
+          "og-cover.svg",
+          "data/**"
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "server.mjs"
+    }
+  ]
+}
