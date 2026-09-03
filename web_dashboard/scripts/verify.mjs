@@ -18,7 +18,7 @@ if(pkg.version!=='8.4.0')fail(`package version must be 8.4.0, got ${pkg.version}
 
 for(const text of [
   'Create Profile','qrajn.online/','PDF SHARING','Profile views','QR scans','PRIVATE PROFILE MANAGEMENT',
-  'QR templates','SCAN QUALITY','✓ Published','profileTemplateGrid','profileBrowserBreakdown','profileUnsavedBadge','frameStyle','frameText','qrRange30','profileRange30'
+  'QR templates','SCAN QUALITY','✓ Published','profileTemplateGrid','profileBrowserBreakdown','profileUnsavedBadge','frameStyle','frameText','qrRange30','profileRange30','trackSlug','qrajn.online/'
 ]) if(!html.includes(text)) fail(`V8.4 UI contract missing: ${text}`);
 
 for(const text of [
@@ -29,12 +29,12 @@ for(const text of [
 
 for(const text of [
   '/api/profiles','profileManageMatch','document_view','document_share','profile_view','qr_scan',
-  'x-manage-token','normalizeAppearance','mutationQueue','version:\'8.4.0\''
+  'x-manage-token','normalizeAppearance','mutationQueue','brandSlug','publicLinkAvailabilityMatch','validatePublicSlug','version:\'8.4.0\''
 ]) if(!server.includes(text)) fail(`server contract missing: ${text}`);
 
 for(const text of [
   'applyQrTemplate','updateScanQuality','loadQrLogo','profileDraft','renderLineChart','startSmartRefresh',
-  'profileChartMode','shareCurrentQr','createExportCanvas','setAnalyticsRange','cleanFrameText'
+  'profileChartMode','shareCurrentQr','createExportCanvas','setAnalyticsRange','cleanFrameText','sanitizeTrackSlugInput','checkTrackSlugAvailability'
 ]) if(!app.includes(text)) fail(`client feature contract missing: ${text}`);
 
 const ids=[...html.matchAll(/\sid="([^"]+)"/g)].map(m=>m[1]);

@@ -39,10 +39,19 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'GET' && url.pathname === '/api/v1/health') {
       const db = await readDb();
       return json(res,200,{
-        ok:true, product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:'local-json',
+        ok:true, product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:process.env.VERCEL?'ephemeral-json':'local-json', persistence:process.env.VERCEL?'temporary':'local',
         auth:'removed', workspace:'removed', billing:'removed', premium:'removed', cloudFunctions:'removed',
         dynamicQrs:db.qrs.length, profiles:db.profiles.length, scanEvents:db.scans.length, profileEvents:db.profileEvents.length
       });
+    }
+
+    const publicLinkAvailabilityMatch=url.pathname.match(/^\/api\/links\/([a-z0-9-]{1,40})\/availability$/);
+    if(publicLinkAvailabilityMatch && req.method==='GET'){
+      const slug=cleanSlug(publicLinkAvailabilityMatch[1]); let reason='';
+      try{validatePublicSlug(slug,'Brand link');}catch(e){reason=e.message||'Invalid link.';}
+      if(reason)return json(res,200,{available:false,slug,reason});
+      const db=await readDb(); const usedByProfile=db.profiles.some(x=>x.slug===slug); const usedByQr=db.qrs.some(x=>x.brandSlug===slug);
+      return json(res,200,{available:!usedByProfile&&!usedByQr,slug,reason:usedByProfile||usedByQr?'This link is already in use.':''});
     }
 
     // ------------------------- Trackable QR API -------------------------
@@ -50,13 +59,19 @@ const server = http.createServer(async (req,res) => {
       enforceRate(req, 'qr-create', 30, 60_000);
       const body = await readJson(req);
       const destinationUrl = safeHttpUrl(body.destinationUrl);
-      const name = cleanText(body.name || 'Untitled QR', 100) || 'Untitled QR';
+      const brandSlug = cleanSlug(body.brandSlug || body.name);
+      validatePublicSlug(brandSlug,'Brand link');
+      const name = cleanText(body.name || brandSlug, 100) || brandSlug;
       const manageToken = token();
       const createdAt = nowIso();
-      const qr = { id:id('qr'), slug:uniqueCode(9), tokenHash:sha256(manageToken), name, destinationUrl, isActive:true, scanCount:0, createdAt, updatedAt:createdAt };
-      await mutateDb(db => { while (db.qrs.some(x=>x.slug===qr.slug)) qr.slug=uniqueCode(9); db.qrs.push(qr); });
+      const qr = { id:id('qr'), slug:uniqueCode(9), brandSlug, tokenHash:sha256(manageToken), name, destinationUrl, isActive:true, scanCount:0, createdAt, updatedAt:createdAt };
+      await mutateDb(db => {
+        if(db.profiles.some(x=>x.slug===brandSlug)||db.qrs.some(x=>x.brandSlug===brandSlug)) throw httpError(409,'That public link is already in use. Choose another.');
+        while (db.qrs.some(x=>x.slug===qr.slug)) qr.slug=uniqueCode(9);
+        db.qrs.push(qr);
+      });
       const origin = effectiveOrigin(req);
-      return json(res,201,{qr:publicQr(qr),manageToken,redirectUrl:`${origin}/r/${qr.slug}`,manageUrl:`${origin}/manage/${qr.id}/${manageToken}`});
+      return json(res,201,{qr:publicQr(qr),manageToken,redirectUrl:`${origin}/${qr.brandSlug}`,legacyRedirectUrl:`${origin}/r/${qr.slug}`,manageUrl:`${origin}/manage/${qr.id}/${manageToken}`});
     }
 
     const qrManageMatch = url.pathname.match(/^\/api\/manage\/qrs\/([A-Za-z0-9_-]{6,100})$/);
@@ -96,7 +111,7 @@ const server = http.createServer(async (req,res) => {
       const body=await readJson(req); const slug=cleanSlug(body.slug); validateSlug(slug);
       const manageToken=token(); const createdAt=nowIso();
       const profile=normalizeProfileInput(body,{slug,manageToken,createdAt});
-      await mutateDb(db=>{ if(db.profiles.some(x=>x.slug===slug)) throw httpError(409,'That profile name is already taken. Choose another.'); while(db.profiles.some(x=>x.qrSlug===profile.qrSlug)) profile.qrSlug=`p-${uniqueCode(10)}`; db.profiles.push(profile); });
+      await mutateDb(db=>{ if(db.profiles.some(x=>x.slug===slug)||db.qrs.some(x=>x.brandSlug===slug)) throw httpError(409,'That public link is already in use. Choose another.'); while(db.profiles.some(x=>x.qrSlug===profile.qrSlug)) profile.qrSlug=`p-${uniqueCode(10)}`; db.profiles.push(profile); });
       const origin=effectiveOrigin(req);
       return json(res,201,{profile:publicProfile(profile,origin),manageToken,publicUrl:`${origin}/${slug}`,manageUrl:`${origin}/manage/profile/${slug}/${manageToken}`,profileQrUrl:`${origin}/r/${profile.qrSlug}`});
     }
@@ -180,11 +195,22 @@ const server = http.createServer(async (req,res) => {
 
     // ------------------------- HTML routing -------------------------
     if ((req.method==='GET'||req.method==='HEAD')) {
-      const profilePageMatch=url.pathname.match(/^\/([a-z0-9-]{3,40})\/?$/);
-      if(profilePageMatch && !RESERVED_SLUGS.has(profilePageMatch[1])){
-        const db=await readDb(); const p=db.profiles.find(x=>x.slug===profilePageMatch[1]); if(!p||p.isActive===false) return serveStaticFile('404.html',res,req.method==='HEAD',404);
-        if(req.method==='GET') await mutateDb(d=>{const profile=d.profiles.find(x=>x.id===p.id); if(profile&&profile.isActive!==false){d.profileEvents.push(profileEvent(req,d.meta.installSecret,profile.id,'profile_view',{}));trimEvents(d);}});
-        return serveProfileHtml(p,res,req.method==='HEAD',effectiveOrigin(req));
+      const publicPageMatch=url.pathname.match(/^\/([a-z0-9-]{3,40})\/?$/);
+      if(publicPageMatch && !RESERVED_SLUGS.has(publicPageMatch[1])){
+        const publicSlug=publicPageMatch[1]; const db=await readDb(); const p=db.profiles.find(x=>x.slug===publicSlug);
+        if(p){
+          if(p.isActive===false)return serveStaticFile('404.html',res,req.method==='HEAD',404);
+          if(req.method==='GET')await mutateDb(d=>{const profile=d.profiles.find(x=>x.id===p.id);if(profile&&profile.isActive!==false){d.profileEvents.push(profileEvent(req,d.meta.installSecret,profile.id,'profile_view',{}));trimEvents(d);}});
+          return serveProfileHtml(p,res,req.method==='HEAD',effectiveOrigin(req));
+        }
+        const brandedQr=db.qrs.find(x=>x.brandSlug===publicSlug);
+        if(brandedQr){
+          if(brandedQr.isActive===false)return htmlMessage(res,404,'QR unavailable','This trackable QR is paused or unavailable.');
+          if(req.method==='HEAD'){const destination=safeHttpUrl(brandedQr.destinationUrl);res.setHeader('cache-control','no-store');res.writeHead(302,{location:destination});return res.end();}
+          let destination=''; await mutateDb(d=>{const qr=d.qrs.find(x=>x.id===brandedQr.id);if(!qr||qr.isActive===false)throw httpError(404,'QR unavailable');destination=safeHttpUrl(qr.destinationUrl);qr.scanCount=Number(qr.scanCount||0)+1;qr.updatedAt=nowIso();d.scans.push(scanEvent(req,d.meta.installSecret,qr.id));trimEvents(d);});
+          res.setHeader('cache-control','no-store, no-cache, must-revalidate');res.writeHead(302,{location:destination});return res.end();
+        }
+        return serveStaticFile('404.html',res,req.method==='HEAD',404);
       }
       return serveRoute(url.pathname,res,req.method==='HEAD');
     }
@@ -286,7 +312,7 @@ function managementPayload(qr,db){
 function dailySeries(events,days){const map=new Map();const out=[];const today=new Date();for(let i=days-1;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth(),today.getDate()-i);const key=localDateKey(d);map.set(key,0);out.push({date:key,count:0});}for(const e of events){const key=localDateKey(new Date(e.createdAt));if(map.has(key))map.set(key,map.get(key)+1);}return out.map(x=>({...x,count:map.get(x.date)||0}));}
 function bucket(events,key){const m=new Map();for(const e of events){const v=e[key]||'Unknown';m.set(v,(m.get(v)||0)+1);}return [...m.entries()].map(([label,count])=>({label,count})).sort((a,b)=>b.count-a.count);}
 function publicScan(e){return {device:e.device,browser:e.browser,os:e.os,referrer:e.referrer,isBot:e.isBot,createdAt:e.createdAt};}
-function publicQr(qr){return {id:qr.id,slug:qr.slug,name:qr.name,destinationUrl:qr.destinationUrl,isActive:qr.isActive,scanCount:Number(qr.scanCount||0),createdAt:qr.createdAt,updatedAt:qr.updatedAt};}
+function publicQr(qr){return {id:qr.id,slug:qr.slug,brandSlug:qr.brandSlug||'',name:qr.name,destinationUrl:qr.destinationUrl,isActive:qr.isActive,scanCount:Number(qr.scanCount||0),createdAt:qr.createdAt,updatedAt:qr.updatedAt};}
 
 function profileEvent(req,secret,profileId,type,extra){const ua=String(req.headers['user-agent']||'').slice(0,500);const parsed=parseUa(ua);return {id:id('evt'),profileId,type,...extra,createdAt:nowIso(),visitorHash:visitorHash(req,secret),device:parsed.device,browser:parsed.browser,os:parsed.os,referrer:safeReferrer(req.headers.referer||req.headers.referrer||''),isBot:isBot(ua)};}
 function scanEvent(req,secret,qrId){const ua=String(req.headers['user-agent']||'').slice(0,500);const parsed=parseUa(ua);return {id:id('scan'),qrId,createdAt:nowIso(),visitorHash:visitorHash(req,secret),device:parsed.device,browser:parsed.browser,os:parsed.os,referrer:safeReferrer(req.headers.referer||req.headers.referrer||''),isBot:isBot(ua)};}
@@ -296,7 +322,7 @@ function safeReferrer(v){if(!v)return'';try{const u=new URL(String(v));return `$
 function visitorHash(req,secret){const ip=clientIp(req);const ua=String(req.headers['user-agent']||'').slice(0,500);return crypto.createHmac('sha256',secret).update(`${ip}\n${ua}`).digest('hex').slice(0,24);}
 function clientIp(req){return String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'').split(',')[0].trim().slice(0,100);}
 
-function validateSlug(slug){if(!/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/.test(slug))throw httpError(400,'Profile link must be 3–40 characters using lowercase letters, numbers and hyphens.');if(slug.includes('--'))throw httpError(400,'Profile link cannot contain repeated hyphens.');if(RESERVED_SLUGS.has(slug))throw httpError(400,'That profile link name is reserved. Choose another.');}
+function validatePublicSlug(slug,label='Public link'){if(!/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/.test(slug))throw httpError(400,`${label} must be 3–40 characters using lowercase letters, numbers and hyphens.`);if(slug.includes('--'))throw httpError(400,`${label} cannot contain repeated hyphens.`);if(RESERVED_SLUGS.has(slug))throw httpError(400,`That ${label.toLowerCase()} is reserved. Choose another.`);}function validateSlug(slug){return validatePublicSlug(slug,'Profile link');}
 function cleanSlug(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,40);}
 function cleanDocumentSlug(v){const s=String(v||'').trim().toLowerCase().replace(/\.pdf$/,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,60);if(!s)throw httpError(400,'Document link name is required.');return s;}
 function cleanAction(v){const a=String(v||'').trim().toLowerCase();const allowed=new Set(['whatsapp','call','email','website','location','instagram','facebook','youtube','linkedin','x','telegram','custom-link','share-profile','copy-profile']);if(!allowed.has(a))throw httpError(400,'Unsupported profile action.');return a;}

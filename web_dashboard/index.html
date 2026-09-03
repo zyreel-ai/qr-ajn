@@ -94,8 +94,10 @@
                 <div id="payloadFields"></div>
               </div>
               <div id="trackFields" class="hidden">
-                <div class="notice"><strong>Trackable QR</strong><span>Each scan reaches QR AJN, records one scan event and then redirects to the destination.</span></div>
-                <label>QR name<input id="trackName" maxlength="100" placeholder="My trackable QR"></label>
+                <label>Brand link
+                  <div class="brand-link-input"><span>qrajn.online/</span><input id="trackSlug" maxlength="40" placeholder="brand-name" autocomplete="off" spellcheck="false"></div>
+                  <small id="trackSlugHint" class="field-hint">3–40 characters · letters, numbers and hyphens</small>
+                </label>
                 <label>Destination website<input id="trackDestination" type="url" maxlength="2048" placeholder="https://example.com/page"></label>
               </div>
             </div>
