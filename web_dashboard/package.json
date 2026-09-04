@@ -12,5 +12,8 @@
   "main": "server.mjs",
   "engines": {
     "node": "22.x"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   }
 }

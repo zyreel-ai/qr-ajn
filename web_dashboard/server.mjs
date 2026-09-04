@@ -12,6 +12,19 @@ const dbFile = process.env.QR_AJN_DATA_FILE ? path.resolve(process.env.QR_AJN_DA
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || '127.0.0.1';
 const publicOrigin = String(process.env.PUBLIC_ORIGIN || '').replace(/\/$/, '');
+const databaseUrl = String(process.env.DATABASE_URL || '').trim();
+const isVercel = Boolean(process.env.VERCEL);
+let pgPool = null;
+if (databaseUrl) {
+  const {Pool} = await import('pg');
+  pgPool = new Pool({
+    connectionString: databaseUrl,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
+    allowExitOnIdle: true
+  });
+}
 const JSON_LIMIT = 256 * 1024;
 const IMAGE_LIMIT = 4 * 1024 * 1024;
 const PDF_LIMIT = 12 * 1024 * 1024;
@@ -39,7 +52,7 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'GET' && url.pathname === '/api/v1/health') {
       const db = await readDb();
       return json(res,200,{
-        ok:true, product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:process.env.VERCEL?'ephemeral-json':'local-json', persistence:process.env.VERCEL?'temporary':'local',
+        ok:!isVercel||Boolean(pgPool), product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:pgPool?'postgres-jsonb':isVercel?'unconfigured':'local-json', persistence:pgPool?'durable':isVercel?'not-configured':'local',
         auth:'removed', workspace:'removed', billing:'removed', premium:'removed', cloudFunctions:'removed',
         dynamicQrs:db.qrs.length, profiles:db.profiles.length, scanEvents:db.scans.length, profileEvents:db.profileEvents.length
       });
@@ -341,10 +354,83 @@ function validImageSignature(b,m){if(m==='image/png')return b.length>=8&&b.subar
 function profileFiles(p){return [p.media?.logo?.fileName,p.media?.cover?.fileName,...(p.documents||[]).map(x=>x.fileName)].filter(Boolean);}
 async function safeDeleteUpload(fileName){try{if(!/^[A-Za-z0-9_.-]+$/.test(fileName))return;await fs.unlink(path.join(uploadsDir,fileName));}catch{}}
 
-async function ensureDatabase(){await fs.mkdir(uploadsDir,{recursive:true});let db;try{db=JSON.parse(await fs.readFile(dbFile,'utf8'));}catch{db={};}db.schema=4;db.meta=db.meta||{};if(!db.meta.installSecret)db.meta.installSecret=crypto.randomBytes(32).toString('hex');db.qrs=Array.isArray(db.qrs)?db.qrs:[];db.scans=Array.isArray(db.scans)?db.scans:[];db.profiles=Array.isArray(db.profiles)?db.profiles:[];db.profileEvents=Array.isArray(db.profileEvents)?db.profileEvents:[];for(const p of db.profiles){p.media=p.media||{logo:null,cover:null};p.documents=Array.isArray(p.documents)?p.documents:[];p.social=p.social||{};p.customLinks=Array.isArray(p.customLinks)?p.customLinks:[];p.appearance=normalizeAppearanceSafe(p.appearance||{});}await writeDb(db);}
-async function readDb(){return JSON.parse(await fs.readFile(dbFile,'utf8'));}
-async function writeDb(db){const tmp=`${dbFile}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;await fs.writeFile(tmp,JSON.stringify(db,null,2),'utf8');await fs.rename(tmp,dbFile);}
-async function mutateDb(fn){const task=mutationQueue.then(async()=>{const db=await readDb();const result=await fn(db);await writeDb(db);return result;});mutationQueue=task.catch(()=>{});return task;}
+function normalizeDbShape(value={}){
+  const db=value&&typeof value==='object'?value:{};
+  db.schema=4;
+  db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
+  if(!db.meta.installSecret)db.meta.installSecret=crypto.randomBytes(32).toString('hex');
+  db.qrs=Array.isArray(db.qrs)?db.qrs:[];
+  db.scans=Array.isArray(db.scans)?db.scans:[];
+  db.profiles=Array.isArray(db.profiles)?db.profiles:[];
+  db.profileEvents=Array.isArray(db.profileEvents)?db.profileEvents:[];
+  for(const p of db.profiles){
+    p.media=p.media||{logo:null,cover:null};
+    p.documents=Array.isArray(p.documents)?p.documents:[];
+    p.social=p.social||{};
+    p.customLinks=Array.isArray(p.customLinks)?p.customLinks:[];
+    p.appearance=normalizeAppearanceSafe(p.appearance||{});
+  }
+  return db;
+}
+async function ensureDatabase(){
+  if(pgPool){
+    await pgPool.query(`CREATE TABLE IF NOT EXISTS qr_ajn_state (
+      id SMALLINT PRIMARY KEY CHECK (id = 1),
+      data JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    const initial=normalizeDbShape({});
+    await pgPool.query(
+      `INSERT INTO qr_ajn_state (id,data) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING`,
+      [JSON.stringify(initial)]
+    );
+    return;
+  }
+  await fs.mkdir(uploadsDir,{recursive:true});
+  let db;
+  try{db=JSON.parse(await fs.readFile(dbFile,'utf8'));}catch{db={};}
+  await writeDb(normalizeDbShape(db));
+}
+async function readDb(){
+  if(pgPool){
+    const {rows}=await pgPool.query('SELECT data FROM qr_ajn_state WHERE id=1');
+    return normalizeDbShape(rows[0]?.data||{});
+  }
+  return normalizeDbShape(JSON.parse(await fs.readFile(dbFile,'utf8')));
+}
+async function writeDb(db){
+  db=normalizeDbShape(db);
+  if(pgPool){
+    await pgPool.query('UPDATE qr_ajn_state SET data=$1::jsonb, updated_at=NOW() WHERE id=1',[JSON.stringify(db)]);
+    return;
+  }
+  const tmp=`${dbFile}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
+  await fs.writeFile(tmp,JSON.stringify(db,null,2),'utf8');
+  await fs.rename(tmp,dbFile);
+}
+async function mutateDb(fn){
+  if(isVercel&&!pgPool)throw httpError(503,'Permanent storage is not configured. Connect a Postgres database before creating or changing QR AJN links.');
+  if(pgPool){
+    const client=await pgPool.connect();
+    try{
+      await client.query('BEGIN');
+      const {rows}=await client.query('SELECT data FROM qr_ajn_state WHERE id=1 FOR UPDATE');
+      const db=normalizeDbShape(rows[0]?.data||{});
+      const result=await fn(db);
+      await client.query('UPDATE qr_ajn_state SET data=$1::jsonb, updated_at=NOW() WHERE id=1',[JSON.stringify(normalizeDbShape(db))]);
+      await client.query('COMMIT');
+      return result;
+    }catch(error){
+      try{await client.query('ROLLBACK');}catch{}
+      throw error;
+    }finally{
+      client.release();
+    }
+  }
+  const task=mutationQueue.then(async()=>{const db=await readDb();const result=await fn(db);await writeDb(db);return result;});
+  mutationQueue=task.catch(()=>{});
+  return task;
+}
 function trimEvents(db){if(db.scans.length>MAX_EVENTS)db.scans=db.scans.slice(-MAX_EVENTS);if(db.profileEvents.length>MAX_EVENTS)db.profileEvents=db.profileEvents.slice(-MAX_EVENTS);}
 
 async function readJson(req){const buf=await readBuffer(req,JSON_LIMIT);if(!buf.length)return{};try{return JSON.parse(buf.toString('utf8'));}catch{throw httpError(400,'Invalid JSON request.');}}
