@@ -29,7 +29,7 @@ for(const text of [
 
 for(const text of [
   '/api/profiles','profileManageMatch','document_view','document_share','profile_view','qr_scan',
-  'x-manage-token','normalizeAppearance','mutationQueue','brandSlug','publicLinkAvailabilityMatch','validatePublicSlug','DATABASE_URL','postgres-jsonb','SELECT data FROM qr_ajn_state WHERE id=1 FOR UPDATE','Permanent storage is not configured','version:\'8.4.0\''
+  'x-manage-token','normalizeAppearance','mutationQueue','brandSlug','publicLinkAvailabilityMatch','validatePublicSlug','FIREBASE_PROJECT_ID','firebase-admin/app','cloud-firestore','collectionGroup(\'scans\')','publicLinks','Firebase Storage','version:\'8.4.0\''
 ]) if(!server.includes(text)) fail(`server contract missing: ${text}`);
 
 for(const text of [
@@ -58,6 +58,6 @@ console.log('PASS: profile templates, Published status, documents and private ma
 console.log('PASS: real-time analytics, graphs, browser/device/activity UI contract');
 console.log('PASS: no auth/workspace/billing/premium navigation and no personal demo identity');
 console.log('PASS: unique DOM ids and all app DOM references resolve');
-console.log('PASS: durable Postgres state adapter + local JSON fallback + serialized mutation contract');
+console.log('PASS: Cloud Firestore + Firebase Storage adapter + local JSON fallback + serialized mutation contract');
 
 function fail(message){console.error('FAIL:',message);process.exit(1);}

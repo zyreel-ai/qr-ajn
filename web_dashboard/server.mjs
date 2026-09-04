@@ -12,18 +12,34 @@ const dbFile = process.env.QR_AJN_DATA_FILE ? path.resolve(process.env.QR_AJN_DA
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || '127.0.0.1';
 const publicOrigin = String(process.env.PUBLIC_ORIGIN || (process.env.VERCEL ? 'https://qrajn.online' : '')).replace(/\/$/, '');
-const databaseUrl = String(process.env.DATABASE_URL || '').trim();
 const isVercel = Boolean(process.env.VERCEL);
-let pgPool = null;
-if (databaseUrl) {
-  const {Pool} = await import('pg');
-  pgPool = new Pool({
-    connectionString: databaseUrl,
-    max: 3,
-    idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 10_000,
-    allowExitOnIdle: true
-  });
+const firebaseServiceJson = String(process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').trim();
+let firebaseServiceAccount = null;
+if (firebaseServiceJson) {
+  try { firebaseServiceAccount = JSON.parse(firebaseServiceJson); }
+  catch { throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.'); }
+}
+const firebaseProjectId = String(process.env.FIREBASE_PROJECT_ID || firebaseServiceAccount?.project_id || '').trim();
+const firebaseClientEmail = String(process.env.FIREBASE_CLIENT_EMAIL || firebaseServiceAccount?.client_email || '').trim();
+const firebasePrivateKey = String(process.env.FIREBASE_PRIVATE_KEY || firebaseServiceAccount?.private_key || '').replace(/\\n/g,'\n').trim();
+const firebaseStorageBucket = String(process.env.FIREBASE_STORAGE_BUCKET || '').trim();
+let firebaseApp = null;
+let firestore = null;
+let storageBucket = null;
+if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey) {
+  const {initializeApp, cert, getApps} = await import('firebase-admin/app');
+  const {getFirestore} = await import('firebase-admin/firestore');
+  const options = {
+    credential: cert({projectId:firebaseProjectId, clientEmail:firebaseClientEmail, privateKey:firebasePrivateKey}),
+    projectId: firebaseProjectId
+  };
+  if (firebaseStorageBucket) options.storageBucket = firebaseStorageBucket;
+  firebaseApp = getApps()[0] || initializeApp(options);
+  firestore = getFirestore(firebaseApp);
+  if (firebaseStorageBucket) {
+    const {getStorage} = await import('firebase-admin/storage');
+    storageBucket = getStorage(firebaseApp).bucket(firebaseStorageBucket);
+  }
 }
 const JSON_LIMIT = 256 * 1024;
 const IMAGE_LIMIT = 4 * 1024 * 1024;
@@ -52,7 +68,7 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'GET' && url.pathname === '/api/v1/health') {
       const db = await readDb();
       return json(res,200,{
-        ok:!isVercel||Boolean(pgPool), product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:pgPool?'postgres-jsonb':isVercel?'unconfigured':'local-json', persistence:pgPool?'durable':isVercel?'not-configured':'local',
+        ok:!isVercel||Boolean(firestore), product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:firestore?'cloud-firestore':isVercel?'unconfigured':'local-json', persistence:firestore?'durable':isVercel?'not-configured':'local', storage:storageBucket?'firebase-storage':isVercel?'not-configured':'local-files',
         auth:'removed', workspace:'removed', billing:'removed', premium:'removed', cloudFunctions:'removed',
         dynamicQrs:db.qrs.length, profiles:db.profiles.length, scanEvents:db.scans.length, profileEvents:db.profileEvents.length
       });
@@ -169,7 +185,7 @@ const server = http.createServer(async (req,res) => {
     const mediaMatch=url.pathname.match(/^\/api\/manage\/profiles\/([a-z0-9-]{3,40})\/media\/(logo|cover)$/);
     if(mediaMatch && req.method==='PUT'){
       enforceRate(req,'profile-media',30,60_000); const mimeType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase(); const ext=imageExtension(mimeType); if(!ext) throw httpError(415,'Use PNG, JPEG or WebP images only.'); const buffer=await readBuffer(req,IMAGE_LIMIT); if(buffer.length<20||!validImageSignature(buffer,mimeType)) throw httpError(400,'Image file is empty, invalid or does not match its file type.');
-      const media={id:id('media'),fileName:`${id('img')}${ext}`,mime:mimeType,size:buffer.length,updatedAt:nowIso()}; await fs.writeFile(path.join(uploadsDir,media.fileName),buffer,{flag:'wx'}); let previous=null; let result;
+      const media={id:id('media'),fileName:`${id('img')}${ext}`,mime:mimeType,size:buffer.length,updatedAt:nowIso()}; await writeUpload(media.fileName,buffer,mimeType); let previous=null; let result;
       try{await mutateDb(db=>{const p=db.profiles.find(x=>x.slug===mediaMatch[1]); if(!p) throw httpError(404,'Profile not found'); authorizeManage(req,p); previous=p.media?.[mediaMatch[2]]?.fileName||null; p.media=p.media||{}; p.media[mediaMatch[2]]=media; p.updatedAt=nowIso(); result=publicProfile(p,effectiveOrigin(req));});}catch(e){await safeDeleteUpload(media.fileName);throw e;} if(previous) await safeDeleteUpload(previous); return json(res,200,{profile:result});
     }
     if(mediaMatch && req.method==='DELETE'){
@@ -178,7 +194,7 @@ const server = http.createServer(async (req,res) => {
 
     const docsCreateMatch=url.pathname.match(/^\/api\/manage\/profiles\/([a-z0-9-]{3,40})\/documents$/);
     if(docsCreateMatch && req.method==='POST'){
-      enforceRate(req,'profile-doc-upload',30,60_000); const contentType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase(); if(contentType!=='application/pdf') throw httpError(415,'Only PDF documents are supported.'); const title=cleanText(headerValue(req,'x-document-title')||'Document',100)||'Document'; const docSlug=cleanDocumentSlug(headerValue(req,'x-document-slug')||title); const buffer=await readBuffer(req,PDF_LIMIT); if(buffer.length<5||buffer.subarray(0,5).toString('ascii')!=='%PDF-') throw httpError(400,'The uploaded file is not a valid PDF.'); const fileName=`${id('pdf')}.pdf`; await fs.writeFile(path.join(uploadsDir,fileName),buffer,{flag:'wx'}); let result;
+      enforceRate(req,'profile-doc-upload',30,60_000); const contentType=String(req.headers['content-type']||'').split(';')[0].trim().toLowerCase(); if(contentType!=='application/pdf') throw httpError(415,'Only PDF documents are supported.'); const title=cleanText(headerValue(req,'x-document-title')||'Document',100)||'Document'; const docSlug=cleanDocumentSlug(headerValue(req,'x-document-slug')||title); const buffer=await readBuffer(req,PDF_LIMIT); if(buffer.length<5||buffer.subarray(0,5).toString('ascii')!=='%PDF-') throw httpError(400,'The uploaded file is not a valid PDF.'); const fileName=`${id('pdf')}.pdf`; await writeUpload(fileName,buffer,contentType); let result;
       try{await mutateDb(db=>{const p=db.profiles.find(x=>x.slug===docsCreateMatch[1]); if(!p) throw httpError(404,'Profile not found'); authorizeManage(req,p); if(p.documents.length>=20) throw httpError(400,'A profile can contain up to 20 PDFs.'); if(p.documents.some(x=>x.slug===docSlug)) throw httpError(409,'That document link name already exists.'); const d={id:id('doc'),slug:docSlug,title,fileName,mime:'application/pdf',size:buffer.length,createdAt:nowIso(),updatedAt:nowIso()}; p.documents.push(d); p.updatedAt=nowIso(); result=publicDocument(d,p,effectiveOrigin(req));});}catch(e){await safeDeleteUpload(fileName);throw e;} return json(res,201,{document:result});
     }
 
@@ -273,6 +289,20 @@ async function serveStaticFile(relative,res,headOnly,status=200){
   try{const stat=await fs.stat(file);if(!stat.isFile())throw new Error('not-file');const body=headOnly?null:await fs.readFile(file);res.setHeader('content-type',mime.get(path.extname(file).toLowerCase())||'application/octet-stream');res.setHeader('cache-control',/\.(html|js|css|json)$/i.test(file)?'no-cache':'public, max-age=3600');res.writeHead(status);return res.end(body);}catch{if(relative!=='404.html'){try{return await serveStaticFile('404.html',res,headOnly,404);}catch{}}return htmlMessage(res,404,'Page not found','The requested page does not exist.');}
 }
 async function serveUpload(meta,res,headOnly,{contentDisposition=null}={}){
+  if(storageBucket){
+    const object=storageBucket.file(`uploads/${meta.fileName}`);
+    try{
+      const [metadata]=await object.getMetadata();
+      res.setHeader('content-type',meta.mime||metadata.contentType||'application/octet-stream');
+      if(metadata.size)res.setHeader('content-length',String(metadata.size));
+      res.setHeader('cache-control','public, max-age=300');
+      if(contentDisposition)res.setHeader('content-disposition',contentDisposition);
+      res.writeHead(200);
+      if(headOnly)return res.end();
+      object.createReadStream().on('error',()=>{try{res.destroy();}catch{}}).pipe(res);
+      return;
+    }catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}
+  }
   const file=path.join(uploadsDir,meta.fileName); if(!file.startsWith(uploadsDir)) return htmlMessage(res,403,'Forbidden','File is unavailable.');
   try{const stat=await fs.stat(file);res.setHeader('content-type',meta.mime||mime.get(path.extname(file))||'application/octet-stream');res.setHeader('content-length',String(stat.size));res.setHeader('cache-control','public, max-age=300');if(contentDisposition)res.setHeader('content-disposition',contentDisposition);res.writeHead(200);if(headOnly)return res.end();fssync.createReadStream(file).pipe(res);}catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}
 }
@@ -352,7 +382,23 @@ function asciiFilename(v){return cleanText(v,80).replace(/[^A-Za-z0-9._-]+/g,'-'
 function imageExtension(m){return ({'image/png':'.png','image/jpeg':'.jpg','image/webp':'.webp'})[m]||'';}
 function validImageSignature(b,m){if(m==='image/png')return b.length>=8&&b.subarray(0,8).equals(Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]));if(m==='image/jpeg')return b.length>=3&&b[0]===0xff&&b[1]===0xd8&&b[2]===0xff;if(m==='image/webp')return b.length>=12&&b.subarray(0,4).toString('ascii')==='RIFF'&&b.subarray(8,12).toString('ascii')==='WEBP';return false;}
 function profileFiles(p){return [p.media?.logo?.fileName,p.media?.cover?.fileName,...(p.documents||[]).map(x=>x.fileName)].filter(Boolean);}
-async function safeDeleteUpload(fileName){try{if(!/^[A-Za-z0-9_.-]+$/.test(fileName))return;await fs.unlink(path.join(uploadsDir,fileName));}catch{}}
+async function writeUpload(fileName,buffer,mimeType){
+  if(!/^[A-Za-z0-9_.-]+$/.test(fileName))throw httpError(400,'Invalid upload name.');
+  if(storageBucket){
+    await storageBucket.file(`uploads/${fileName}`).save(buffer,{resumable:false,metadata:{contentType:mimeType,cacheControl:'public,max-age=300'}});
+    return;
+  }
+  if(isVercel)throw httpError(503,'Firebase Storage is not configured for QR AJN uploads.');
+  await fs.mkdir(uploadsDir,{recursive:true});
+  await fs.writeFile(path.join(uploadsDir,fileName),buffer,{flag:'wx'});
+}
+async function safeDeleteUpload(fileName){
+  try{
+    if(!/^[A-Za-z0-9_.-]+$/.test(fileName))return;
+    if(storageBucket){await storageBucket.file(`uploads/${fileName}`).delete({ignoreNotFound:true});return;}
+    await fs.unlink(path.join(uploadsDir,fileName));
+  }catch{}
+}
 
 function normalizeDbShape(value={}){
   const db=value&&typeof value==='object'?value:{};
@@ -372,60 +418,98 @@ function normalizeDbShape(value={}){
   }
   return db;
 }
+function firestoreClean(value){return JSON.parse(JSON.stringify(value));}
+function sameRecord(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function mapById(items){return new Map((items||[]).map(x=>[x.id,x]));}
+function publicLinkMap(db){
+  const map=new Map();
+  for(const qr of db.qrs||[])if(qr.brandSlug)map.set(qr.brandSlug,{type:'qr',resourceId:qr.id,active:qr.isActive!==false,updatedAt:qr.updatedAt||qr.createdAt||nowIso()});
+  for(const p of db.profiles||[])if(p.slug)map.set(p.slug,{type:'profile',resourceId:p.id,active:p.isActive!==false,updatedAt:p.updatedAt||p.createdAt||nowIso()});
+  return map;
+}
+async function firestoreGet(reader,ref){return reader?reader.get(ref):ref.get();}
+async function readFirestoreDb(reader=null){
+  const runtimeRef=firestore.collection('system').doc('runtime');
+  const runtimeSnap=await firestoreGet(reader,runtimeRef);
+  const qrsSnap=await firestoreGet(reader,firestore.collection('qrs'));
+  const profilesSnap=await firestoreGet(reader,firestore.collection('profiles'));
+  const scansSnap=await firestoreGet(reader,firestore.collectionGroup('scans'));
+  const eventsSnap=await firestoreGet(reader,firestore.collectionGroup('events'));
+  const db=normalizeDbShape({
+    schema:4,
+    meta:{installSecret:runtimeSnap.exists?String(runtimeSnap.data()?.installSecret||''):''},
+    qrs:qrsSnap.docs.map(d=>d.data()),
+    scans:scansSnap.docs.map(d=>d.data()),
+    profiles:profilesSnap.docs.map(d=>d.data()),
+    profileEvents:eventsSnap.docs.map(d=>d.data())
+  });
+  return db;
+}
+function syncRecordMap(tx,collectionName,beforeItems,afterItems){
+  const before=mapById(beforeItems),after=mapById(afterItems),col=firestore.collection(collectionName);
+  for(const [id,item] of after)if(!before.has(id)||!sameRecord(before.get(id),item))tx.set(col.doc(id),firestoreClean(item));
+  for(const [id] of before)if(!after.has(id))tx.delete(col.doc(id));
+}
+function syncNestedEventMap(tx,parentCollection,childCollection,beforeItems,afterItems,parentKey){
+  const before=mapById(beforeItems),after=mapById(afterItems);
+  for(const [id,item] of after){
+    if(!before.has(id)||!sameRecord(before.get(id),item)){
+      const parentId=item[parentKey];
+      if(!parentId)throw new Error(`Missing ${parentKey} for ${childCollection} record.`);
+      tx.set(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id),firestoreClean(item));
+    }
+  }
+  for(const [id,item] of before)if(!after.has(id)){
+    const parentId=item[parentKey];
+    if(parentId)tx.delete(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id));
+  }
+}
+function syncPublicLinks(tx,beforeDb,afterDb){
+  const before=publicLinkMap(beforeDb),after=publicLinkMap(afterDb),col=firestore.collection('publicLinks');
+  for(const [slug,item] of after)if(!before.has(slug)||!sameRecord(before.get(slug),item))tx.set(col.doc(slug),firestoreClean(item));
+  for(const [slug] of before)if(!after.has(slug))tx.delete(col.doc(slug));
+}
 async function ensureDatabase(){
-  if(pgPool){
-    await pgPool.query(`CREATE TABLE IF NOT EXISTS qr_ajn_state (
-      id SMALLINT PRIMARY KEY CHECK (id = 1),
-      data JSONB NOT NULL,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )`);
-    const initial=normalizeDbShape({});
-    await pgPool.query(
-      `INSERT INTO qr_ajn_state (id,data) VALUES (1,$1::jsonb) ON CONFLICT (id) DO NOTHING`,
-      [JSON.stringify(initial)]
-    );
+  if(firestore){
+    const ref=firestore.collection('system').doc('runtime');
+    const snap=await ref.get();
+    if(!snap.exists)await ref.create({schema:4,installSecret:crypto.randomBytes(32).toString('hex'),updatedAt:nowIso()});
     return;
   }
+  if(isVercel) return;
   await fs.mkdir(uploadsDir,{recursive:true});
   let db;
   try{db=JSON.parse(await fs.readFile(dbFile,'utf8'));}catch{db={};}
   await writeDb(normalizeDbShape(db));
 }
 async function readDb(){
-  if(pgPool){
-    const {rows}=await pgPool.query('SELECT data FROM qr_ajn_state WHERE id=1');
-    return normalizeDbShape(rows[0]?.data||{});
-  }
+  if(firestore)return readFirestoreDb();
+  if(isVercel)throw httpError(503,'Cloud Firestore is not configured. Add the QR AJN Firebase Admin environment variables.');
   return normalizeDbShape(JSON.parse(await fs.readFile(dbFile,'utf8')));
 }
 async function writeDb(db){
   db=normalizeDbShape(db);
-  if(pgPool){
-    await pgPool.query('UPDATE qr_ajn_state SET data=$1::jsonb, updated_at=NOW() WHERE id=1',[JSON.stringify(db)]);
-    return;
-  }
+  if(firestore)throw new Error('Direct Firestore writes must use mutateDb().');
   const tmp=`${dbFile}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
   await fs.writeFile(tmp,JSON.stringify(db,null,2),'utf8');
   await fs.rename(tmp,dbFile);
 }
 async function mutateDb(fn){
-  if(isVercel&&!pgPool)throw httpError(503,'Permanent storage is not configured. Connect a Postgres database before creating or changing QR AJN links.');
-  if(pgPool){
-    const client=await pgPool.connect();
-    try{
-      await client.query('BEGIN');
-      const {rows}=await client.query('SELECT data FROM qr_ajn_state WHERE id=1 FOR UPDATE');
-      const db=normalizeDbShape(rows[0]?.data||{});
-      const result=await fn(db);
-      await client.query('UPDATE qr_ajn_state SET data=$1::jsonb, updated_at=NOW() WHERE id=1',[JSON.stringify(normalizeDbShape(db))]);
-      await client.query('COMMIT');
+  if(isVercel&&!firestore)throw httpError(503,'Cloud Firestore is not configured. Add the QR AJN Firebase Admin environment variables.');
+  if(firestore){
+    return firestore.runTransaction(async tx=>{
+      const current=await readFirestoreDb(tx);
+      const before=structuredClone(current);
+      const result=await fn(current);
+      const after=normalizeDbShape(current);
+      tx.set(firestore.collection('system').doc('runtime'),{schema:4,installSecret:after.meta.installSecret,updatedAt:nowIso()},{merge:true});
+      syncRecordMap(tx,'qrs',before.qrs,after.qrs);
+      syncRecordMap(tx,'profiles',before.profiles,after.profiles);
+      syncNestedEventMap(tx,'qrs','scans',before.scans,after.scans,'qrId');
+      syncNestedEventMap(tx,'profiles','events',before.profileEvents,after.profileEvents,'profileId');
+      syncPublicLinks(tx,before,after);
       return result;
-    }catch(error){
-      try{await client.query('ROLLBACK');}catch{}
-      throw error;
-    }finally{
-      client.release();
-    }
+    });
   }
   const task=mutationQueue.then(async()=>{const db=await readDb();const result=await fn(db);await writeDb(db);return result;});
   mutationQueue=task.catch(()=>{});
