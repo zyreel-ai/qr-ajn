@@ -2,4 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /manage/
 Disallow: /api/
+Disallow: /data/
+Disallow: /vendor/
 Sitemap: https://qrajn.online/sitemap.xml

@@ -10,6 +10,8 @@
           "index.html",
           "styles.css",
           "app.js",
+          "v9-extra.js",
+          "v9-extra.mjs",
           "qr-encoder.js",
           "privacy.html",
           "terms.html",
@@ -22,15 +24,13 @@
           "favicon.svg",
           "manifest.webmanifest",
           "og-cover.svg",
+          "node_modules/pdf-lib/dist/pdf-lib.min.js",
           "data/**"
         ]
       }
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.mjs"
-    }
+    {"src": "/(.*)", "dest": "server.mjs"}
   ]
 }

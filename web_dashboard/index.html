@@ -4,18 +4,72 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f7f9ff">
-  <meta name="description" content="Create professional QR codes, publish a public QR AJN profile, share PDFs and track scans, views and clicks in real time — no account required.">
+  <meta name="color-scheme" content="light">
+  <meta name="application-name" content="QR AJN">
+  <meta name="apple-mobile-web-app-title" content="QR AJN">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <meta name="description" content="Create unlimited static QR codes, free short links, digital profiles, PDF links and live analytics with QR AJN. No login, no signup and no subscription required.">
+  <meta name="keywords" content="free QR code generator, unlimited QR codes, free short links, URL shortener, no login QR generator, no signup URL shortener, dynamic QR code, QR analytics, short link analytics, digital business card, PDF QR code, QR AJN">
   <link rel="canonical" href="https://qrajn.online/">
-  <meta property="og:title" content="QR AJN — QR Codes, Public Profiles & Live Analytics">
-  <meta property="og:description" content="Create QR codes and a public qrajn.online/yourname page with PDF sharing and live scan analytics.">
+  <meta property="og:site_name" content="QR AJN">
+  <meta property="og:title" content="QR AJN — Free QR Codes & Short Links | No Login">
+  <meta property="og:description" content="Create unlimited static QR codes, free short links, profiles and PDF links with live analytics. No login or signup required.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://qrajn.online/">
   <meta property="og:image" content="https://qrajn.online/og-cover.svg">
+  <meta property="og:image:alt" content="QR AJN free QR code generator, short links and live analytics">
+  <meta property="og:locale" content="en_IN">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="QR AJN — Free QR Codes & Short Links">
+  <meta name="twitter:description" content="Unlimited static QR creation, free short links and live analytics — no login or signup required.">
+  <meta name="twitter:image" content="https://qrajn.online/og-cover.svg">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
-  <title>QR AJN — QR Codes, Public Profiles & Live Analytics</title>
+  <title>QR AJN — Free QR Code Generator & Short Links | No Login</title>
   <link rel="stylesheet" href="/styles.css">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"QR AJN","applicationCategory":"UtilitiesApplication","operatingSystem":"Web","url":"https://qrajn.online/","description":"Create QR codes, public microsite profiles, share PDFs and track scans, views and clicks."}</script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {
+        "@type":"Organization",
+        "@id":"https://qrajn.online/#organization",
+        "name":"QR AJN",
+        "url":"https://qrajn.online/",
+        "logo":"https://qrajn.online/favicon.svg"
+      },
+      {
+        "@type":"WebSite",
+        "@id":"https://qrajn.online/#website",
+        "url":"https://qrajn.online/",
+        "name":"QR AJN",
+        "publisher":{"@id":"https://qrajn.online/#organization"},
+        "inLanguage":"en"
+      },
+      {
+        "@type":"WebApplication",
+        "@id":"https://qrajn.online/#app",
+        "name":"QR AJN",
+        "url":"https://qrajn.online/",
+        "applicationCategory":"UtilitiesApplication",
+        "operatingSystem":"Web",
+        "isAccessibleForFree":true,
+        "description":"Free QR code generator, short links, digital profiles, PDF sharing and live analytics with no login or signup required.",
+        "featureList":["Unlimited static QR code creation","Free short links","Dynamic trackable QR codes","Live analytics","Digital profiles","PDF sharing","No login required","No signup required"]
+      },
+      {
+        "@type":"FAQPage",
+        "@id":"https://qrajn.online/#faq",
+        "mainEntity":[
+          {"@type":"Question","name":"Is QR AJN free to use?","acceptedAnswer":{"@type":"Answer","text":"QR AJN provides free QR creation and free short links. Static QR codes can be created without an account."}},
+          {"@type":"Question","name":"Do I need to login or sign up?","acceptedAnswer":{"@type":"Answer","text":"No. QR AJN does not require login or signup to create QR codes or short links."}},
+          {"@type":"Question","name":"Can QR AJN track scans and short-link clicks?","acceptedAnswer":{"@type":"Answer","text":"Yes. Trackable QR codes and short links include live analytics that refresh while the analytics page is open."}},
+          {"@type":"Question","name":"Can I change a short link or QR destination later?","acceptedAnswer":{"@type":"Answer","text":"Yes. Dynamic QR codes and smart short links can be updated through their private management link without changing the public link."}}
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header class="topbar">
@@ -25,23 +79,39 @@
     </a>
     <nav aria-label="Main navigation">
       <a href="/#create">Create QR</a>
+      <a href="/#shorten">Short Link</a>
       <a href="/#profileCreate">Create Profile</a>
+      <a href="/#smartCreate">Smart Tools</a>
       <button id="openManageButton" class="nav-button" type="button">Open Analytics</button>
     </nav>
   </header>
+
+  <aside class="free-highlight" aria-label="QR AJN free access highlights">
+    <div class="free-highlight-inner shell">
+      <span class="free-spark free-spark-one" aria-hidden="true">✦</span>
+      <span class="free-spark free-spark-two" aria-hidden="true">✧</span>
+      <strong>Free to use</strong>
+      <span>Unlimited static QR codes</span>
+      <span>Free short links</span>
+      <span>No login</span>
+      <span>No signup</span>
+      <a href="#create">Create free <span aria-hidden="true">→</span></a>
+    </div>
+  </aside>
 
   <main>
     <section id="homeView" class="page-view">
       <section class="hero shell reveal">
         <div class="hero-copy">
-          <span class="eyebrow">NO ACCOUNT · PRIVATE MANAGEMENT · LIVE ANALYTICS</span>
-          <h1>Create QR codes<br><span>that do more.</span></h1>
-          <p>Create, customize and share QR codes, publish a clean <strong>qrajn.online/yourname</strong> page, attach PDFs and understand scans, views and actions.</p>
+          <span class="eyebrow">FREE QR CODES · FREE SHORT LINKS · NO LOGIN · NO SIGNUP</span>
+          <h1>Create. Shorten.<br><span>Share. Track.</span></h1>
+          <p>Create unlimited static QR codes in your browser, make free short links, publish a clean <strong>qrajn.online/yourname</strong> page, share PDFs and follow real activity with live analytics — no login or signup required.</p>
           <div class="hero-actions">
             <a class="button primary" href="#create">Create QR</a>
+            <a class="button secondary" href="#shorten">Shorten Link</a>
             <a class="button secondary" href="#profileCreate">Create Profile</a>
           </div>
-          <div class="trust-row"><span>Professional QR customization</span><span>Public profile + PDF links</span><span>Privacy-safe analytics</span></div>
+          <div class="trust-row"><span>Unlimited static QR codes</span><span>Free short links</span><span>No login or signup</span><span>Live analytics</span></div>
         </div>
         <div class="hero-card" aria-hidden="true">
           <div class="product-visual">
@@ -69,6 +139,67 @@
         <div><b>4</b><span><strong>Analyze</strong><small>Scans, views and actions</small></span></div>
       </section>
 
+
+      <section class="seo-benefits shell reveal" aria-labelledby="seoBenefitsTitle">
+        <div class="section-heading seo-benefits-heading">
+          <span class="eyebrow">FREE · FAST · PRIVATE</span>
+          <h2 id="seoBenefitsTitle">QR codes and short links without account friction.</h2>
+          <p>QR AJN is built for students, creators and small businesses that want professional sharing tools without creating an account first.</p>
+        </div>
+        <div class="seo-benefit-grid">
+          <article><span aria-hidden="true">▦</span><h3>Unlimited static QR codes</h3><p>Create as many static QR codes as you need in your browser with professional colors, styles, logos and export options.</p></article>
+          <article><span aria-hidden="true">↗</span><h3>Free short links</h3><p>Turn long URLs into clean qrajn.online links, use a custom back-half when available and create a QR from the short link.</p></article>
+          <article><span aria-hidden="true">●</span><h3>Live analytics</h3><p>Track real scans, clicks, profile views and actions. Visible analytics refresh automatically without fake demo numbers.</p></article>
+          <article><span aria-hidden="true">✓</span><h3>No login or signup</h3><p>Create first. Private management links let you edit supported dynamic items later without a traditional account.</p></article>
+        </div>
+      </section>
+
+      <section id="shorten" class="shortener shell reveal">
+        <div class="section-heading shortener-heading">
+          <span class="eyebrow">SHORT LINKS · LIVE CLICKS</span>
+          <h2>Turn a long URL into a clean QR AJN link.</h2>
+          <p>Paste a destination and create a short link in seconds. Leave the back-half blank for an automatic six-character code, or choose your own name.</p>
+        </div>
+        <form id="v9QuickShortForm" class="panel quick-short-panel">
+          <div class="quick-short-main">
+            <label>Destination URL<input id="v9QuickDestination" type="url" maxlength="2048" placeholder="https://example.com/very/long/link" required></label>
+            <button id="v9QuickShortButton" class="button primary" type="submit">Shorten link</button>
+          </div>
+          <div class="quick-short-options">
+            <label>Title <input id="v9QuickName" maxlength="100" placeholder="My link"></label>
+            <label>Custom back-half <div class="slug-input"><span>qrajn.online/</span><input id="v9QuickSlug" maxlength="48" placeholder="auto"></div></label>
+          </div>
+          <p id="v9QuickMessage" class="message" aria-live="polite"></p>
+          <div id="v9QuickResult" class="quick-short-result hidden">
+            <div><small>SHORT LINK</small><strong id="v9QuickResultName">Ready</strong><span id="v9QuickLiveStatus"><i></i> Live analytics · updates every 5 sec</span></div>
+            <div class="copy-row"><input id="v9QuickPublic" readonly><button id="v9QuickCopy" class="button primary" type="button">Copy</button></div>
+            <div class="quick-short-actions"><a id="v9QuickOpen" class="button secondary" target="_blank">Open</a><button id="v9QuickQr" class="button secondary" type="button">Create QR</button><a id="v9QuickManage" class="button secondary">Manage & analytics</a></div>
+            <div class="quick-live-stats"><div><small>CLICKS</small><strong id="v9QuickClicks">0</strong></div><div><small>UNIQUE</small><strong id="v9QuickUnique">0</strong></div><div><small>DEVICE</small><strong id="v9QuickDevice">—</strong></div></div>
+          </div>
+        </form>
+      </section>
+
+      <section id="smartCreate" class="smart-create shell reveal">
+        <div class="section-heading">
+          <span class="eyebrow">SMART CREATE</span>
+          <h2>Tell QR AJN what you want to make.</h2>
+          <p>Use natural language to prepare a QR, profile, smart link, document, campaign or analytics view. QR AJN only prepares the action — you stay in control before publishing.</p>
+        </div>
+        <div class="panel smart-command-panel">
+          <div class="smart-command-copy"><small>QUICK COMMAND</small><h3>What would you like to create?</h3><p>Example: “Create a trackable QR for https://example.com” or “Create a business profile for my salon”.</p></div>
+          <textarea id="v9SmartPrompt" rows="4" maxlength="1000" placeholder="Create a QR for my website with a professional blue design"></textarea>
+          <div class="smart-chip-row">
+            <button type="button" data-v9-prompt="Create a trackable QR for https://example.com">Trackable QR</button>
+            <button type="button" data-v9-prompt="Create a business profile for my salon">Business profile</button>
+            <button type="button" data-v9-prompt="Create a smart link for https://example.com">Smart link</button>
+            <button type="button" data-v9-prompt="Open PDF editor">PDF editor</button>
+            <button type="button" data-v9-prompt="Show analytics">Analytics</button>
+          </div>
+          <div class="smart-command-actions"><button id="v9SmartRun" class="button primary" type="button">Prepare request</button><span>No AI account or login required.</span></div>
+          <div id="v9SmartResult" class="smart-result hidden" aria-live="polite"></div>
+        </div>
+      </section>
+
       <section id="create" class="creator shell reveal">
         <div class="section-heading">
           <span class="eyebrow">QR CREATOR</span>
@@ -94,10 +225,8 @@
                 <div id="payloadFields"></div>
               </div>
               <div id="trackFields" class="hidden">
-                <label>Brand link
-                  <div class="brand-link-input"><span>qrajn.online/</span><input id="trackSlug" maxlength="40" placeholder="brand-name" autocomplete="off" spellcheck="false"></div>
-                  <small id="trackSlugHint" class="field-hint">3–40 characters · letters, numbers and hyphens</small>
-                </label>
+                <div class="notice"><strong>Trackable QR</strong><span>Each scan reaches QR AJN, records one scan event and then redirects to the destination.</span></div>
+                <label>QR name<input id="trackName" maxlength="100" placeholder="My trackable QR"></label>
                 <label>Destination website<input id="trackDestination" type="url" maxlength="2048" placeholder="https://example.com/page"></label>
               </div>
             </div>
@@ -224,6 +353,81 @@
         <div id="profileCreatedCard" class="panel profile-created hidden"><div><span class="eyebrow">PROFILE CREATED</span><h3>Your public page is ready.</h3><p>Save the private management link. It is the only key for editing, PDFs and analytics.</p></div><div id="profileCreatedQr" class="created-qr"></div><div class="created-links"><label>Public link<div class="copy-row"><input id="createdPublicUrl" readonly><button id="copyCreatedPublic" class="button secondary" type="button">Copy</button></div></label><label>Private management link<div class="copy-row"><input id="createdManageUrl" readonly><button id="copyCreatedManage" class="button primary" type="button">Copy</button></div></label><div class="inline-actions"><a id="openCreatedPublic" class="button secondary" target="_blank">Open profile</a><a id="openCreatedManage" class="button secondary">Open analytics</a><button id="downloadCreatedProfileQr" class="button secondary" type="button">Download profile QR</button></div></div></div>
       </section>
 
+
+      <section id="smartTools" class="smart-tools shell reveal">
+        <div class="section-heading"><span class="eyebrow">SMART CONNECTION TOOLS</span><h2>Links, campaigns and standalone documents.</h2><p>These tools use the same QR AJN design language and private management-link model as the live product.</p></div>
+        <div class="v9-tool-tabs" role="tablist" aria-label="Smart tools">
+          <button class="active" type="button" data-v9-tool="link">Smart Link</button>
+          <button type="button" data-v9-tool="campaign">Campaign</button>
+          <button type="button" data-v9-tool="document">Document</button>
+        </div>
+        <div class="v9-tool-layout">
+          <form id="v9LinkForm" class="panel v9-tool-panel active" data-v9-panel="link">
+            <div class="panel-head"><div><small>DYNAMIC LINK</small><h3>Smart Link</h3><p>Change the destination later, set schedule/expiry, add routing and UTM tracking.</p></div><span class="profile-chip">ACTIVE</span></div>
+            <div class="form-row"><label>Link name<input id="v9LinkName" maxlength="100" placeholder="Summer Offer"></label><label>Public name <small class="field-hint">Optional — blank creates a short code</small><div class="slug-input"><span>qrajn.online/</span><input id="v9LinkSlug" maxlength="48" placeholder="auto"></div></label></div>
+            <label>Destination<input id="v9LinkDestination" type="url" maxlength="2048" placeholder="https://example.com/offer" required></label>
+            <details><summary>Schedule and routing</summary><div class="v9-detail-body"><div class="form-row"><label>Starts at<input id="v9LinkStart" type="datetime-local"></label><label>Expires at<input id="v9LinkExpiry" type="datetime-local"></label></div><label>Expired destination<input id="v9LinkExpired" type="url" placeholder="https://example.com/expired"></label><div class="form-row"><label>Android destination<input id="v9RouteAndroid" type="url" placeholder="https://play.google.com/..."></label><label>iOS destination<input id="v9RouteIos" type="url" placeholder="https://apps.apple.com/..."></label></div><label>Desktop destination<input id="v9RouteDesktop" type="url" placeholder="https://example.com/desktop"></label></div></details>
+            <details><summary>UTM tracking</summary><div class="v9-detail-body"><div class="form-row"><label>Source<input id="v9UtmSource" placeholder="instagram"></label><label>Medium<input id="v9UtmMedium" placeholder="social"></label></div><label>Campaign<input id="v9UtmCampaign" placeholder="diwali_2026"></label></div></details>
+            <div class="profile-submit-row"><button class="button primary" type="submit">Create short / smart link</button><span>Automatic short code + private management link.</span></div><p id="v9LinkMessage" class="message"></p>
+          </form>
+
+          <form id="v9CampaignForm" class="panel v9-tool-panel hidden" data-v9-panel="campaign">
+            <div class="panel-head"><div><small>CAMPAIGN</small><h3>Group and measure a marketing goal</h3><p>Create one campaign record and reuse its UTM values across links and QR placements.</p></div></div>
+            <label>Campaign name<input id="v9CampaignName" maxlength="100" required placeholder="Diwali Sale 2026"></label>
+            <label>Description<textarea id="v9CampaignDescription" rows="4" maxlength="500" placeholder="Goal, audience and notes"></textarea></label>
+            <div class="form-row"><label>UTM source<input id="v9CampaignSource" placeholder="instagram"></label><label>UTM medium<input id="v9CampaignMedium" placeholder="social"></label></div>
+            <label>UTM campaign<input id="v9CampaignUtm" placeholder="diwali_sale"></label>
+            <div class="profile-submit-row"><button class="button primary" type="submit">Create campaign</button><span>Saved locally for this test package.</span></div><p id="v9CampaignMessage" class="message"></p>
+          </form>
+
+          <form id="v9DocumentForm" class="panel v9-tool-panel hidden" data-v9-panel="document">
+            <div class="panel-head"><div><small>STANDALONE PDF</small><h3>Publish a clean document link</h3><p>Upload a PDF, keep a stable public URL and replace metadata later with the private management link.</p></div></div>
+            <label>PDF file<input id="v9DocumentFile" type="file" accept="application/pdf" required></label>
+            <div class="form-row"><label>Title<input id="v9DocumentTitle" maxlength="120" required placeholder="My Resume"></label><label>Public name<div class="slug-input"><span>qrajn.online/</span><input id="v9DocumentSlug" maxlength="48" required placeholder="resume"></div></label></div>
+            <label>Description<textarea id="v9DocumentDescription" rows="4" maxlength="500" placeholder="Optional description"></textarea></label>
+            <div class="profile-submit-row"><button class="button primary" type="submit">Upload & publish</button><span>PDF limit: 12 MB.</span></div><p id="v9DocumentMessage" class="message"></p>
+          </form>
+
+          <aside class="panel v9-created-panel"><small>CREATED ITEM</small><h3 id="v9CreatedTitle">Nothing created yet</h3><p id="v9CreatedText">Create a smart link, campaign or standalone document to see its public and private management links here.</p><div id="v9CreatedLinks" class="hidden"><label>Public link<div class="copy-row"><input id="v9CreatedPublic" readonly><button id="v9CopyPublic" class="button secondary" type="button">Copy</button></div></label><label>Private management link<div class="copy-row"><input id="v9CreatedManage" readonly><button id="v9CopyManage" class="button primary" type="button">Copy</button></div></label><div class="inline-actions"><a id="v9OpenPublic" class="button secondary" target="_blank">Open public</a><a id="v9OpenManage" class="button secondary">Manage</a></div></div></aside>
+        </div>
+      </section>
+
+      <section id="v9Analytics" class="smart-tools shell reveal">
+        <div class="section-heading"><span class="eyebrow">UNIFIED ANALYTICS</span><h2>One view across QR, profiles, links and documents.</h2><p>Real events only. Bot-like events from the existing QR/profile analytics are excluded where they are already marked.</p></div>
+        <div class="v9-analytics-toolbar"><span class="analytics-live-badge"><i></i> Live · 5 sec</span><label>Range<select id="v9AnalyticsRange"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">365 days</option></select></label><button id="v9RefreshAnalytics" class="button secondary" type="button">Refresh</button><button id="v9ExportAnalytics" class="button secondary" type="button">Export CSV</button></div>
+        <div class="metric-grid v9-metric-grid"><article><small>Total engagements</small><strong id="v9StatTotal">0</strong><span>All tracked events</span></article><article><small>QR scans</small><strong id="v9StatQr">0</strong><span>Trackable + profile QR</span></article><article><small>Link clicks</small><strong id="v9StatLinks">0</strong><span>Smart links</span></article><article><small>Profile views</small><strong id="v9StatProfiles">0</strong><span>Public profiles</span></article><article><small>Document views</small><strong id="v9StatDocs">0</strong><span>PDF opens</span></article><article><small>Approx. unique</small><strong id="v9StatUnique">0</strong><span>Privacy-safe estimate</span></article></div>
+        <div class="analytics-grid"><section class="panel"><div class="panel-head"><div><small>ENGAGEMENT</small><h3>Activity by day</h3></div></div><div id="v9DailyChart" class="v9-bar-chart"></div></section><section class="panel"><div class="panel-head"><div><small>DEVICES</small><h3>Visitor mix</h3></div></div><div id="v9DeviceBreakdown" class="breakdown"></div><div class="panel-divider"></div><div class="panel-head compact"><div><small>BROWSERS</small><h3>Top browsers</h3></div></div><div id="v9BrowserBreakdown" class="breakdown"></div></section></div>
+        <section class="panel"><div class="panel-head"><div><small>RECENT</small><h3>Latest activity</h3></div></div><div id="v9RecentActivity" class="recent-list"></div></section>
+      </section>
+
+      <section id="v9PdfEditor" class="smart-tools shell reveal">
+        <div class="section-heading"><span class="eyebrow">LOCAL PDF EDITOR</span><h2>Edit PDFs without changing the QR AJN look.</h2><p>Rotate pages, watermark, extract, merge and edit metadata in your browser. Nothing uploads until you choose Publish.</p></div>
+        <div class="v9-pdf-layout">
+          <section class="panel v9-pdf-controls"><label id="v9PdfDrop" class="v9-drop-zone"><input id="v9PdfInput" type="file" accept="application/pdf"><strong>Choose a PDF</strong><span>or drag it here</span><small>Editing happens locally in your browser.</small></label><div id="v9PdfTools" class="hidden"><div class="v9-pdf-meta"><strong id="v9PdfName">document.pdf</strong><span id="v9PdfInfo">0 pages</span></div><div class="inline-actions"><button id="v9RotateLeft" class="button secondary" type="button">↶ Rotate -90°</button><button id="v9RotateRight" class="button secondary" type="button">↷ Rotate +90°</button></div><label>Watermark text<input id="v9WatermarkText" placeholder="CONFIDENTIAL"></label><button id="v9ApplyWatermark" class="button secondary full" type="button">Apply watermark</button><label>Extract pages<input id="v9ExtractPages" placeholder="1,3,5-7"></label><button id="v9Extract" class="button secondary full" type="button">Create extracted PDF</button><label>Merge another PDF<input id="v9MergePdf" type="file" accept="application/pdf"></label><button id="v9Merge" class="button secondary full" type="button">Merge PDF</button><details><summary>Document metadata</summary><div class="v9-detail-body"><label>Title<input id="v9PdfTitle"></label><label>Author<input id="v9PdfAuthor"></label><button id="v9SaveMetadata" class="button secondary full" type="button">Save metadata</button></div></details><button id="v9DownloadPdf" class="button primary full" type="button">Download edited PDF</button><button id="v9PublishPdf" class="button secondary full" type="button">Publish edited PDF</button></div></section>
+          <section class="panel v9-pdf-preview"><div id="v9PdfEmpty" class="qr-placeholder"><span class="qr-placeholder-icon">PDF</span><strong>Your PDF preview appears here</strong><small>Select a PDF to start editing.</small></div><iframe id="v9PdfFrame" class="hidden" title="Edited PDF preview"></iframe></section>
+        </div>
+      </section>
+
+      <section class="seo-faq shell reveal" id="faq" aria-labelledby="faqTitle">
+        <div class="section-heading">
+          <span class="eyebrow">QUICK ANSWERS</span>
+          <h2 id="faqTitle">QR AJN FAQ</h2>
+          <p>Simple answers about QR codes, short links, accounts and analytics.</p>
+        </div>
+        <div class="seo-faq-grid">
+          <details><summary>Is QR AJN free?</summary><p>QR AJN provides free QR creation and free short links. Static QR creation does not require an account.</p></details>
+          <details><summary>Do I need to login or sign up?</summary><p>No. You can create QR codes and short links without login or signup. Dynamic items use a private management link for later edits.</p></details>
+          <details><summary>Are static QR codes unlimited?</summary><p>QR AJN does not place a creation counter on static QR codes generated in your browser. Server-backed features remain protected by fair-use and anti-abuse limits.</p></details>
+          <details><summary>Are short-link clicks tracked live?</summary><p>Yes. Supported short links collect real click analytics and the open analytics view refreshes automatically, typically every five seconds while visible.</p></details>
+        </div>
+      </section>
+
+      <section id="v9Items" class="smart-tools shell reveal">
+        <div class="section-heading"><span class="eyebrow">MY ITEMS</span><h2>Private management links saved on this device.</h2><p>No account is required. Export a recovery file before clearing browser data or moving to another device.</p></div>
+        <div class="draft-banner"><div><strong>Keep the recovery file private</strong><span>If every management secret is lost, QR AJN cannot safely prove ownership.</span></div><div><button id="v9ExportRecovery" class="button secondary" type="button">Download recovery file</button><label class="button tertiary v9-import-label">Import<input id="v9ImportRecovery" type="file" accept="application/json"></label></div></div>
+        <div id="v9ItemsGrid" class="v9-items-grid"></div>
+      </section>
+
       <section id="how" class="how shell reveal">
         <div class="section-heading"><span class="eyebrow">HOW IT WORKS</span><h2>Create → Share → Scan → Analyze.</h2></div>
         <div class="steps"><article><b>1</b><h3>Create</h3><p>Build a QR or choose a permanent public profile link.</p></article><article><b>2</b><h3>Share</h3><p>Share the QR, qrajn.online profile or clean PDF link.</p></article><article><b>3</b><h3>Understand</h3><p>See real scans, profile views, clicks, devices and document activity.</p></article></div>
@@ -277,12 +481,21 @@
         <section class="panel danger-zone"><div><small>PROFILE CONTROL</small><h3>Delete profile</h3><p>Deleting permanently removes this profile, its analytics, images and PDFs.</p></div><button id="deleteManagedProfile" class="button danger" type="button">Delete profile</button></section>
       </div>
     </section>
+
+    <section id="v9ManageView" class="page-view hidden manage-shell shell">
+      <div class="manage-top"><div><a class="back-link" href="/">← QR AJN home</a><span class="eyebrow">PRIVATE MANAGEMENT</span><h1 id="v9ManageHeading">Manage item</h1><p id="v9ManageSubheading">Loading private management data...</p></div></div>
+      <div id="v9ManageError" class="error-card hidden"></div>
+      <section id="v9ManagePanel" class="panel hidden"></section>
+    </section>
+
   </main>
 
   <dialog id="manageDialog"><form method="dialog"><h2>Open private analytics</h2><p>Paste the private management link saved when you created a trackable QR or public profile.</p><label>Private management link<input id="manageLinkInput" type="url" placeholder="http://.../manage/..."></label><p id="manageDialogMessage" class="message"></p><div class="dialog-actions"><button class="button tertiary" value="cancel">Cancel</button><button id="openPastedManageLink" class="button primary" value="default" type="button">Open</button></div></form></dialog>
   <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
 
   <footer><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span class="footer-note">QR AJN · Create · Share · Analyze</span></footer>
+  <script src="/vendor/pdf-lib.min.js"></script>
   <script type="module" src="/app.js"></script>
+  <script type="module" src="/v9-extra.js"></script>
 </body>
 </html>

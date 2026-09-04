@@ -4,6 +4,7 @@ import fssync from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
+import {createV9Extra} from './v9-extra.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.VERCEL ? path.join('/tmp', 'qr-ajn', 'data') : path.join(root, 'data');
@@ -29,17 +30,11 @@ let storageBucket = null;
 if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey) {
   const {initializeApp, cert, getApps} = await import('firebase-admin/app');
   const {getFirestore} = await import('firebase-admin/firestore');
-  const options = {
-    credential: cert({projectId:firebaseProjectId, clientEmail:firebaseClientEmail, privateKey:firebasePrivateKey}),
-    projectId: firebaseProjectId
-  };
-  if (firebaseStorageBucket) options.storageBucket = firebaseStorageBucket;
-  firebaseApp = getApps()[0] || initializeApp(options);
-  firestore = getFirestore(firebaseApp);
-  if (firebaseStorageBucket) {
-    const {getStorage} = await import('firebase-admin/storage');
-    storageBucket = getStorage(firebaseApp).bucket(firebaseStorageBucket);
-  }
+  const options = {credential:cert({projectId:firebaseProjectId,clientEmail:firebaseClientEmail,privateKey:firebasePrivateKey}),projectId:firebaseProjectId};
+  if(firebaseStorageBucket) options.storageBucket=firebaseStorageBucket;
+  firebaseApp=getApps()[0]||initializeApp(options);
+  firestore=getFirestore(firebaseApp);
+  if(firebaseStorageBucket){const {getStorage}=await import('firebase-admin/storage');storageBucket=getStorage(firebaseApp).bucket(firebaseStorageBucket);}
 }
 const JSON_LIMIT = 256 * 1024;
 const IMAGE_LIMIT = 4 * 1024 * 1024;
@@ -57,6 +52,7 @@ const mime = new Map([
 let mutationQueue = Promise.resolve();
 const rateBuckets = new Map();
 await ensureDatabase();
+const v9Extra = createV9Extra({root,dataDir,firestore,storageBucket,isVercel});
 
 const server = http.createServer(async (req,res) => {
   const requestId = crypto.randomUUID();
@@ -65,22 +61,22 @@ const server = http.createServer(async (req,res) => {
     const url = new URL(req.url || '/', `http://${req.headers.host || `${host}:${port}`}`);
     if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
 
+    if (await v9Extra.handle(req,res,url,effectiveOrigin(req))) return;
+
     if (req.method === 'GET' && url.pathname === '/api/v1/health') {
       const db = await readDb();
       return json(res,200,{
-        ok:!isVercel||Boolean(firestore), product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics', database:firestore?'cloud-firestore':isVercel?'unconfigured':'local-json', persistence:firestore?'durable':isVercel?'not-configured':'local', storage:storageBucket?'firebase-storage':isVercel?'not-configured':'local-files',
-        auth:'removed', workspace:'removed', billing:'removed', premium:'removed', cloudFunctions:'removed',
+        ok:!isVercel||Boolean(firestore), product:'QR AJN', version:'8.4.0', mode:'qr-profile-analytics-v9', database:firestore?'cloud-firestore':isVercel?'unconfigured':'local-json', persistence:firestore?'durable':isVercel?'not-configured':'local', storage:storageBucket?'firebase-storage':isVercel?'not-configured':'local-files',
+        auth:'removed', workspace:'removed', billing:'removed', premium:'removed', cloudFunctions:'removed', shortLinks:true, realtimeAnalytics:true,
         dynamicQrs:db.qrs.length, profiles:db.profiles.length, scanEvents:db.scans.length, profileEvents:db.profileEvents.length
       });
     }
 
-    const publicLinkAvailabilityMatch=url.pathname.match(/^\/api\/links\/([a-z0-9-]{1,40})\/availability$/);
+    const publicLinkAvailabilityMatch=url.pathname.match(/^\/api\/links\/([a-z0-9-]{1,48})\/availability$/);
     if(publicLinkAvailabilityMatch && req.method==='GET'){
-      const slug=cleanSlug(publicLinkAvailabilityMatch[1]); let reason='';
-      try{validatePublicSlug(slug,'Brand link');}catch(e){reason=e.message||'Invalid link.';}
-      if(reason)return json(res,200,{available:false,slug,reason});
-      const db=await readDb(); const usedByProfile=db.profiles.some(x=>x.slug===slug); const usedByQr=db.qrs.some(x=>x.brandSlug===slug);
-      return json(res,200,{available:!usedByProfile&&!usedByQr,slug,reason:usedByProfile||usedByQr?'This link is already in use.':''});
+      const slug=cleanSlug(publicLinkAvailabilityMatch[1]);let reason='';try{validatePublicSlug(slug,'Public link');}catch(e){reason=e.message||'Invalid link.';}if(reason)return json(res,200,{available:false,slug,reason});
+      if(firestore){const snap=await firestore.collection('publicLinks').doc(slug).get();return json(res,200,{available:!snap.exists,slug,reason:snap.exists?'This link is already in use.':''});}
+      const db=await readDb();const used=db.profiles.some(x=>x.slug===slug)||db.qrs.some(x=>x.brandSlug===slug);return json(res,200,{available:!used,slug,reason:used?'This link is already in use.':''});
     }
 
     // ------------------------- Trackable QR API -------------------------
@@ -88,17 +84,14 @@ const server = http.createServer(async (req,res) => {
       enforceRate(req, 'qr-create', 30, 60_000);
       const body = await readJson(req);
       const destinationUrl = safeHttpUrl(body.destinationUrl);
-      const brandSlug = cleanSlug(body.brandSlug || body.name);
+      const brandSlug = cleanSlug(body.brandSlug || body.name || `qr-${uniqueCode(6).toLowerCase()}`);
       validatePublicSlug(brandSlug,'Brand link');
+      if(firestore){const snap=await firestore.collection('publicLinks').doc(brandSlug).get();if(snap.exists)throw httpError(409,'That public link is already in use. Choose another.');}
       const name = cleanText(body.name || brandSlug, 100) || brandSlug;
       const manageToken = token();
       const createdAt = nowIso();
       const qr = { id:id('qr'), slug:uniqueCode(9), brandSlug, tokenHash:sha256(manageToken), name, destinationUrl, isActive:true, scanCount:0, createdAt, updatedAt:createdAt };
-      await mutateDb(db => {
-        if(db.profiles.some(x=>x.slug===brandSlug)||db.qrs.some(x=>x.brandSlug===brandSlug)) throw httpError(409,'That public link is already in use. Choose another.');
-        while (db.qrs.some(x=>x.slug===qr.slug)) qr.slug=uniqueCode(9);
-        db.qrs.push(qr);
-      });
+      await mutateDb(db => {if(db.profiles.some(x=>x.slug===brandSlug)||db.qrs.some(x=>x.brandSlug===brandSlug))throw httpError(409,'That public link is already in use. Choose another.');while(db.qrs.some(x=>x.slug===qr.slug))qr.slug=uniqueCode(9);db.qrs.push(qr);});
       const origin = effectiveOrigin(req);
       return json(res,201,{qr:publicQr(qr),manageToken,redirectUrl:`${origin}/${qr.brandSlug}`,legacyRedirectUrl:`${origin}/r/${qr.slug}`,manageUrl:`${origin}/manage/${qr.id}/${manageToken}`});
     }
@@ -138,6 +131,7 @@ const server = http.createServer(async (req,res) => {
     if (req.method === 'POST' && url.pathname === '/api/profiles') {
       enforceRate(req,'profile-create',20,60_000);
       const body=await readJson(req); const slug=cleanSlug(body.slug); validateSlug(slug);
+      if(firestore){const snap=await firestore.collection('publicLinks').doc(slug).get();if(snap.exists)throw httpError(409,'That public link is already in use. Choose another.');}
       const manageToken=token(); const createdAt=nowIso();
       const profile=normalizeProfileInput(body,{slug,manageToken,createdAt});
       await mutateDb(db=>{ if(db.profiles.some(x=>x.slug===slug)||db.qrs.some(x=>x.brandSlug===slug)) throw httpError(409,'That public link is already in use. Choose another.'); while(db.profiles.some(x=>x.qrSlug===profile.qrSlug)) profile.qrSlug=`p-${uniqueCode(10)}`; db.profiles.push(profile); });
@@ -226,19 +220,9 @@ const server = http.createServer(async (req,res) => {
     if ((req.method==='GET'||req.method==='HEAD')) {
       const publicPageMatch=url.pathname.match(/^\/([a-z0-9-]{3,40})\/?$/);
       if(publicPageMatch && !RESERVED_SLUGS.has(publicPageMatch[1])){
-        const publicSlug=publicPageMatch[1]; const db=await readDb(); const p=db.profiles.find(x=>x.slug===publicSlug);
-        if(p){
-          if(p.isActive===false)return serveStaticFile('404.html',res,req.method==='HEAD',404);
-          if(req.method==='GET')await mutateDb(d=>{const profile=d.profiles.find(x=>x.id===p.id);if(profile&&profile.isActive!==false){d.profileEvents.push(profileEvent(req,d.meta.installSecret,profile.id,'profile_view',{}));trimEvents(d);}});
-          return serveProfileHtml(p,res,req.method==='HEAD',effectiveOrigin(req));
-        }
-        const brandedQr=db.qrs.find(x=>x.brandSlug===publicSlug);
-        if(brandedQr){
-          if(brandedQr.isActive===false)return htmlMessage(res,404,'QR unavailable','This trackable QR is paused or unavailable.');
-          if(req.method==='HEAD'){const destination=safeHttpUrl(brandedQr.destinationUrl);res.setHeader('cache-control','no-store');res.writeHead(302,{location:destination});return res.end();}
-          let destination=''; await mutateDb(d=>{const qr=d.qrs.find(x=>x.id===brandedQr.id);if(!qr||qr.isActive===false)throw httpError(404,'QR unavailable');destination=safeHttpUrl(qr.destinationUrl);qr.scanCount=Number(qr.scanCount||0)+1;qr.updatedAt=nowIso();d.scans.push(scanEvent(req,d.meta.installSecret,qr.id));trimEvents(d);});
-          res.setHeader('cache-control','no-store, no-cache, must-revalidate');res.writeHead(302,{location:destination});return res.end();
-        }
+        const publicSlug=publicPageMatch[1];const db=await readDb();const p=db.profiles.find(x=>x.slug===publicSlug);
+        if(p){if(p.isActive===false)return serveStaticFile('404.html',res,req.method==='HEAD',404);if(req.method==='GET')await mutateDb(d=>{const profile=d.profiles.find(x=>x.id===p.id);if(profile&&profile.isActive!==false){d.profileEvents.push(profileEvent(req,d.meta.installSecret,profile.id,'profile_view',{}));trimEvents(d);}});return serveProfileHtml(p,res,req.method==='HEAD',effectiveOrigin(req));}
+        const brandedQr=db.qrs.find(x=>x.brandSlug===publicSlug);if(brandedQr){if(brandedQr.isActive===false)return htmlMessage(res,404,'QR unavailable','This trackable QR is paused or unavailable.');if(req.method==='HEAD'){const destination=safeHttpUrl(brandedQr.destinationUrl);res.setHeader('cache-control','no-store');res.writeHead(302,{location:destination});return res.end();}let destination='';await mutateDb(d=>{const qr=d.qrs.find(x=>x.id===brandedQr.id);if(!qr||qr.isActive===false)throw httpError(404,'QR unavailable');destination=safeHttpUrl(qr.destinationUrl);qr.scanCount=Number(qr.scanCount||0)+1;qr.updatedAt=nowIso();d.scans.push(scanEvent(req,d.meta.installSecret,qr.id));trimEvents(d);});res.setHeader('cache-control','no-store, no-cache, must-revalidate');res.writeHead(302,{location:destination});return res.end();}
         return serveStaticFile('404.html',res,req.method==='HEAD',404);
       }
       return serveRoute(url.pathname,res,req.method==='HEAD');
@@ -263,7 +247,7 @@ server.listen(port,process.env.VERCEL ? undefined : host,()=>{
 });
 
 async function serveRoute(pathname,res,headOnly){
-  const spa = pathname==='/' || pathname==='/create' || pathname==='/create-profile' || /^\/manage\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/profile\/[a-z0-9-]{3,40}\/[A-Za-z0-9_-]{20,200}$/.test(pathname);
+  const spa = pathname==='/' || pathname==='/create' || pathname==='/create-profile' || /^\/manage\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/profile\/[a-z0-9-]{3,40}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/v9\/(links|campaigns|documents)\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname);
   const mapped = new Map([['/privacy','privacy.html'],['/terms','terms.html'],['/contact','contact.html'],['/about','about.html']]);
   let relative = mapped.get(pathname) || (spa?'index.html':pathname.replace(/^\/+/,'')); if(!relative) relative='index.html';
   if(relative.includes('..')||relative.includes('\\')||path.isAbsolute(relative)) return htmlMessage(res,400,'Invalid path','The requested path is invalid.');
@@ -289,22 +273,8 @@ async function serveStaticFile(relative,res,headOnly,status=200){
   try{const stat=await fs.stat(file);if(!stat.isFile())throw new Error('not-file');const body=headOnly?null:await fs.readFile(file);res.setHeader('content-type',mime.get(path.extname(file).toLowerCase())||'application/octet-stream');res.setHeader('cache-control',/\.(html|js|css|json)$/i.test(file)?'no-cache':'public, max-age=3600');res.writeHead(status);return res.end(body);}catch{if(relative!=='404.html'){try{return await serveStaticFile('404.html',res,headOnly,404);}catch{}}return htmlMessage(res,404,'Page not found','The requested page does not exist.');}
 }
 async function serveUpload(meta,res,headOnly,{contentDisposition=null}={}){
-  if(storageBucket){
-    const object=storageBucket.file(`uploads/${meta.fileName}`);
-    try{
-      const [metadata]=await object.getMetadata();
-      res.setHeader('content-type',meta.mime||metadata.contentType||'application/octet-stream');
-      if(metadata.size)res.setHeader('content-length',String(metadata.size));
-      res.setHeader('cache-control','public, max-age=300');
-      if(contentDisposition)res.setHeader('content-disposition',contentDisposition);
-      res.writeHead(200);
-      if(headOnly)return res.end();
-      object.createReadStream().on('error',()=>{try{res.destroy();}catch{}}).pipe(res);
-      return;
-    }catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}
-  }
-  const file=path.join(uploadsDir,meta.fileName); if(!file.startsWith(uploadsDir)) return htmlMessage(res,403,'Forbidden','File is unavailable.');
-  try{const stat=await fs.stat(file);res.setHeader('content-type',meta.mime||mime.get(path.extname(file))||'application/octet-stream');res.setHeader('content-length',String(stat.size));res.setHeader('cache-control','public, max-age=300');if(contentDisposition)res.setHeader('content-disposition',contentDisposition);res.writeHead(200);if(headOnly)return res.end();fssync.createReadStream(file).pipe(res);}catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}
+  if(storageBucket){const object=storageBucket.file(`uploads/${meta.fileName}`);try{const [metadata]=await object.getMetadata();res.setHeader('content-type',meta.mime||metadata.contentType||'application/octet-stream');if(metadata.size)res.setHeader('content-length',String(metadata.size));res.setHeader('cache-control','public, max-age=300');if(contentDisposition)res.setHeader('content-disposition',contentDisposition);res.writeHead(200);if(headOnly)return res.end();object.createReadStream().on('error',()=>{try{res.destroy();}catch{}}).pipe(res);return;}catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}}
+  const file=path.join(uploadsDir,meta.fileName);if(!file.startsWith(uploadsDir))return htmlMessage(res,403,'Forbidden','File is unavailable.');try{const stat=await fs.stat(file);res.setHeader('content-type',meta.mime||mime.get(path.extname(file))||'application/octet-stream');res.setHeader('content-length',String(stat.size));res.setHeader('cache-control','public, max-age=300');if(contentDisposition)res.setHeader('content-disposition',contentDisposition);res.writeHead(200);if(headOnly)return res.end();fssync.createReadStream(file).pipe(res);}catch{return htmlMessage(res,404,'File not found','This file is unavailable.');}
 }
 
 function normalizeProfileInput(body,{slug,manageToken,createdAt}){
@@ -382,138 +352,34 @@ function asciiFilename(v){return cleanText(v,80).replace(/[^A-Za-z0-9._-]+/g,'-'
 function imageExtension(m){return ({'image/png':'.png','image/jpeg':'.jpg','image/webp':'.webp'})[m]||'';}
 function validImageSignature(b,m){if(m==='image/png')return b.length>=8&&b.subarray(0,8).equals(Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]));if(m==='image/jpeg')return b.length>=3&&b[0]===0xff&&b[1]===0xd8&&b[2]===0xff;if(m==='image/webp')return b.length>=12&&b.subarray(0,4).toString('ascii')==='RIFF'&&b.subarray(8,12).toString('ascii')==='WEBP';return false;}
 function profileFiles(p){return [p.media?.logo?.fileName,p.media?.cover?.fileName,...(p.documents||[]).map(x=>x.fileName)].filter(Boolean);}
-async function writeUpload(fileName,buffer,mimeType){
-  if(!/^[A-Za-z0-9_.-]+$/.test(fileName))throw httpError(400,'Invalid upload name.');
-  if(storageBucket){
-    await storageBucket.file(`uploads/${fileName}`).save(buffer,{resumable:false,metadata:{contentType:mimeType,cacheControl:'public,max-age=300'}});
-    return;
-  }
-  if(isVercel)throw httpError(503,'Firebase Storage is not configured for QR AJN uploads.');
-  await fs.mkdir(uploadsDir,{recursive:true});
-  await fs.writeFile(path.join(uploadsDir,fileName),buffer,{flag:'wx'});
-}
-async function safeDeleteUpload(fileName){
-  try{
-    if(!/^[A-Za-z0-9_.-]+$/.test(fileName))return;
-    if(storageBucket){await storageBucket.file(`uploads/${fileName}`).delete({ignoreNotFound:true});return;}
-    await fs.unlink(path.join(uploadsDir,fileName));
-  }catch{}
-}
-
-function normalizeDbShape(value={}){
-  const db=value&&typeof value==='object'?value:{};
-  db.schema=4;
-  db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};
-  if(!db.meta.installSecret)db.meta.installSecret=crypto.randomBytes(32).toString('hex');
-  db.qrs=Array.isArray(db.qrs)?db.qrs:[];
-  db.scans=Array.isArray(db.scans)?db.scans:[];
-  db.profiles=Array.isArray(db.profiles)?db.profiles:[];
-  db.profileEvents=Array.isArray(db.profileEvents)?db.profileEvents:[];
-  for(const p of db.profiles){
-    p.media=p.media||{logo:null,cover:null};
-    p.documents=Array.isArray(p.documents)?p.documents:[];
-    p.social=p.social||{};
-    p.customLinks=Array.isArray(p.customLinks)?p.customLinks:[];
-    p.appearance=normalizeAppearanceSafe(p.appearance||{});
-  }
-  return db;
-}
+async function writeUpload(fileName,buffer,mimeType){if(!/^[A-Za-z0-9_.-]+$/.test(fileName))throw httpError(400,'Invalid upload name.');if(storageBucket){await storageBucket.file(`uploads/${fileName}`).save(buffer,{resumable:false,metadata:{contentType:mimeType,cacheControl:'public,max-age=300'}});return;}if(isVercel)throw httpError(503,'Firebase Storage is not configured for QR AJN uploads.');await fs.mkdir(uploadsDir,{recursive:true});await fs.writeFile(path.join(uploadsDir,fileName),buffer,{flag:'wx'});}
+async function safeDeleteUpload(fileName){try{if(!/^[A-Za-z0-9_.-]+$/.test(fileName))return;if(storageBucket){await storageBucket.file(`uploads/${fileName}`).delete({ignoreNotFound:true});return;}await fs.unlink(path.join(uploadsDir,fileName));}catch{}}
+function normalizeDbShape(value={}){const db=value&&typeof value==='object'?value:{};db.schema=4;db.meta=db.meta&&typeof db.meta==='object'?db.meta:{};if(!db.meta.installSecret)db.meta.installSecret=crypto.randomBytes(32).toString('hex');db.qrs=Array.isArray(db.qrs)?db.qrs:[];db.scans=Array.isArray(db.scans)?db.scans:[];db.profiles=Array.isArray(db.profiles)?db.profiles:[];db.profileEvents=Array.isArray(db.profileEvents)?db.profileEvents:[];for(const p of db.profiles){p.media=p.media||{logo:null,cover:null};p.documents=Array.isArray(p.documents)?p.documents:[];p.social=p.social||{};p.customLinks=Array.isArray(p.customLinks)?p.customLinks:[];p.appearance=normalizeAppearanceSafe(p.appearance||{});}return db;}
 function firestoreClean(value){return JSON.parse(JSON.stringify(value));}
 function sameRecord(a,b){return JSON.stringify(a)===JSON.stringify(b);}
 function mapById(items){return new Map((items||[]).map(x=>[x.id,x]));}
-function publicLinkMap(db){
-  const map=new Map();
-  for(const qr of db.qrs||[])if(qr.brandSlug)map.set(qr.brandSlug,{type:'qr',resourceId:qr.id,active:qr.isActive!==false,updatedAt:qr.updatedAt||qr.createdAt||nowIso()});
-  for(const p of db.profiles||[])if(p.slug)map.set(p.slug,{type:'profile',resourceId:p.id,active:p.isActive!==false,updatedAt:p.updatedAt||p.createdAt||nowIso()});
-  return map;
-}
+function publicLinkMap(db){const map=new Map();for(const qr of db.qrs||[])if(qr.brandSlug)map.set(qr.brandSlug,{type:'qr',resourceId:qr.id,active:qr.isActive!==false,updatedAt:qr.updatedAt||qr.createdAt||nowIso()});for(const p of db.profiles||[])if(p.slug)map.set(p.slug,{type:'profile',resourceId:p.id,active:p.isActive!==false,updatedAt:p.updatedAt||p.createdAt||nowIso()});return map;}
 async function firestoreGet(reader,ref){return reader?reader.get(ref):ref.get();}
-async function readFirestoreDb(reader=null){
-  const runtimeRef=firestore.collection('system').doc('runtime');
-  const runtimeSnap=await firestoreGet(reader,runtimeRef);
-  const qrsSnap=await firestoreGet(reader,firestore.collection('qrs'));
-  const profilesSnap=await firestoreGet(reader,firestore.collection('profiles'));
-  const scansSnap=await firestoreGet(reader,firestore.collectionGroup('scans'));
-  const eventsSnap=await firestoreGet(reader,firestore.collectionGroup('events'));
-  const db=normalizeDbShape({
-    schema:4,
-    meta:{installSecret:runtimeSnap.exists?String(runtimeSnap.data()?.installSecret||''):''},
-    qrs:qrsSnap.docs.map(d=>d.data()),
-    scans:scansSnap.docs.map(d=>d.data()),
-    profiles:profilesSnap.docs.map(d=>d.data()),
-    profileEvents:eventsSnap.docs.map(d=>d.data())
-  });
-  return db;
-}
-function syncRecordMap(tx,collectionName,beforeItems,afterItems){
-  const before=mapById(beforeItems),after=mapById(afterItems),col=firestore.collection(collectionName);
-  for(const [id,item] of after)if(!before.has(id)||!sameRecord(before.get(id),item))tx.set(col.doc(id),firestoreClean(item));
-  for(const [id] of before)if(!after.has(id))tx.delete(col.doc(id));
-}
-function syncNestedEventMap(tx,parentCollection,childCollection,beforeItems,afterItems,parentKey){
-  const before=mapById(beforeItems),after=mapById(afterItems);
-  for(const [id,item] of after){
-    if(!before.has(id)||!sameRecord(before.get(id),item)){
-      const parentId=item[parentKey];
-      if(!parentId)throw new Error(`Missing ${parentKey} for ${childCollection} record.`);
-      tx.set(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id),firestoreClean(item));
-    }
-  }
-  for(const [id,item] of before)if(!after.has(id)){
-    const parentId=item[parentKey];
-    if(parentId)tx.delete(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id));
-  }
-}
-function syncPublicLinks(tx,beforeDb,afterDb){
-  const before=publicLinkMap(beforeDb),after=publicLinkMap(afterDb),col=firestore.collection('publicLinks');
-  for(const [slug,item] of after)if(!before.has(slug)||!sameRecord(before.get(slug),item))tx.set(col.doc(slug),firestoreClean(item));
-  for(const [slug] of before)if(!after.has(slug))tx.delete(col.doc(slug));
-}
-async function ensureDatabase(){
-  if(firestore){
-    const ref=firestore.collection('system').doc('runtime');
-    const snap=await ref.get();
-    if(!snap.exists)await ref.create({schema:4,installSecret:crypto.randomBytes(32).toString('hex'),updatedAt:nowIso()});
-    return;
-  }
-  if(isVercel) return;
-  await fs.mkdir(uploadsDir,{recursive:true});
-  let db;
-  try{db=JSON.parse(await fs.readFile(dbFile,'utf8'));}catch{db={};}
-  await writeDb(normalizeDbShape(db));
-}
+async function readFirestoreDb(reader=null){const runtimeRef=firestore.collection('system').doc('runtime');const runtimeSnap=await firestoreGet(reader,runtimeRef);const qrsSnap=await firestoreGet(reader,firestore.collection('qrs'));const profilesSnap=await firestoreGet(reader,firestore.collection('profiles'));const scansSnap=await firestoreGet(reader,firestore.collectionGroup('scans'));const eventsSnap=await firestoreGet(reader,firestore.collectionGroup('events'));return normalizeDbShape({schema:4,meta:{installSecret:runtimeSnap.exists?String(runtimeSnap.data()?.installSecret||''):''},qrs:qrsSnap.docs.map(d=>d.data()),scans:scansSnap.docs.map(d=>d.data()),profiles:profilesSnap.docs.map(d=>d.data()),profileEvents:eventsSnap.docs.map(d=>d.data())});}
+function syncRecordMap(tx,collectionName,beforeItems,afterItems){const before=mapById(beforeItems),after=mapById(afterItems),col=firestore.collection(collectionName);for(const [id,item] of after)if(!before.has(id)||!sameRecord(before.get(id),item))tx.set(col.doc(id),firestoreClean(item));for(const [id] of before)if(!after.has(id))tx.delete(col.doc(id));}
+function syncNestedEventMap(tx,parentCollection,childCollection,beforeItems,afterItems,parentKey){const before=mapById(beforeItems),after=mapById(afterItems);for(const [id,item] of after){if(!before.has(id)||!sameRecord(before.get(id),item)){const parentId=item[parentKey];if(!parentId)throw new Error(`Missing ${parentKey} for ${childCollection} record.`);tx.set(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id),firestoreClean(item));}}for(const [id,item] of before)if(!after.has(id)){const parentId=item[parentKey];if(parentId)tx.delete(firestore.collection(parentCollection).doc(parentId).collection(childCollection).doc(id));}}
+function syncPublicLinks(tx,beforeDb,afterDb){const before=publicLinkMap(beforeDb),after=publicLinkMap(afterDb),col=firestore.collection('publicLinks');for(const [slug,item] of after)if(!before.has(slug)||!sameRecord(before.get(slug),item))tx.set(col.doc(slug),firestoreClean(item));for(const [slug] of before)if(!after.has(slug))tx.delete(col.doc(slug));}
+async function ensureDatabase(){if(firestore){const ref=firestore.collection('system').doc('runtime');const snap=await ref.get();if(!snap.exists)await ref.create({schema:4,installSecret:crypto.randomBytes(32).toString('hex'),updatedAt:nowIso()});return;}if(isVercel)return;await fs.mkdir(uploadsDir,{recursive:true});let db;try{db=JSON.parse(await fs.readFile(dbFile,'utf8'));}catch{db={};}await writeDb(normalizeDbShape(db));}
+async function readLocalDbUnsafe(){return normalizeDbShape(JSON.parse(await fs.readFile(dbFile,'utf8')));}
+function enqueueLocalDbOperation(fn){const task=mutationQueue.then(fn);mutationQueue=task.catch(()=>{});return task;}
 async function readDb(){
   if(firestore)return readFirestoreDb();
   if(isVercel)throw httpError(503,'Cloud Firestore is not configured. Add the QR AJN Firebase Admin environment variables.');
-  return normalizeDbShape(JSON.parse(await fs.readFile(dbFile,'utf8')));
+  // Local JSON is used only for localhost/tests. Serialize reads with writes too: on Windows,
+  // concurrent readFile() handles can briefly block the atomic rename used by writeDb(),
+  // which previously caused intermittent 500s during branded-link scan bursts.
+  return enqueueLocalDbOperation(()=>readLocalDbUnsafe());
 }
-async function writeDb(db){
-  db=normalizeDbShape(db);
-  if(firestore)throw new Error('Direct Firestore writes must use mutateDb().');
-  const tmp=`${dbFile}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;
-  await fs.writeFile(tmp,JSON.stringify(db,null,2),'utf8');
-  await fs.rename(tmp,dbFile);
-}
+async function writeDb(db){db=normalizeDbShape(db);if(firestore)throw new Error('Direct Firestore writes must use mutateDb().');const tmp=`${dbFile}.${process.pid}.${crypto.randomBytes(4).toString('hex')}.tmp`;await fs.writeFile(tmp,JSON.stringify(db,null,2),'utf8');try{await fs.rename(tmp,dbFile);}catch(error){try{await fs.rm(tmp,{force:true});}catch{}throw error;}}
 async function mutateDb(fn){
   if(isVercel&&!firestore)throw httpError(503,'Cloud Firestore is not configured. Add the QR AJN Firebase Admin environment variables.');
-  if(firestore){
-    return firestore.runTransaction(async tx=>{
-      const current=await readFirestoreDb(tx);
-      const before=structuredClone(current);
-      const result=await fn(current);
-      const after=normalizeDbShape(current);
-      tx.set(firestore.collection('system').doc('runtime'),{schema:4,installSecret:after.meta.installSecret,updatedAt:nowIso()},{merge:true});
-      syncRecordMap(tx,'qrs',before.qrs,after.qrs);
-      syncRecordMap(tx,'profiles',before.profiles,after.profiles);
-      syncNestedEventMap(tx,'qrs','scans',before.scans,after.scans,'qrId');
-      syncNestedEventMap(tx,'profiles','events',before.profileEvents,after.profileEvents,'profileId');
-      syncPublicLinks(tx,before,after);
-      return result;
-    });
-  }
-  const task=mutationQueue.then(async()=>{const db=await readDb();const result=await fn(db);await writeDb(db);return result;});
-  mutationQueue=task.catch(()=>{});
-  return task;
+  if(firestore){return firestore.runTransaction(async tx=>{const current=await readFirestoreDb(tx);const before=structuredClone(current);const result=await fn(current);const after=normalizeDbShape(current);tx.set(firestore.collection('system').doc('runtime'),{schema:4,installSecret:after.meta.installSecret,updatedAt:nowIso()},{merge:true});syncRecordMap(tx,'qrs',before.qrs,after.qrs);syncRecordMap(tx,'profiles',before.profiles,after.profiles);syncNestedEventMap(tx,'qrs','scans',before.scans,after.scans,'qrId');syncNestedEventMap(tx,'profiles','events',before.profileEvents,after.profileEvents,'profileId');syncPublicLinks(tx,before,after);return result;});}
+  return enqueueLocalDbOperation(async()=>{const db=await readLocalDbUnsafe();const result=await fn(db);await writeDb(db);return result;});
 }
 function trimEvents(db){if(db.scans.length>MAX_EVENTS)db.scans=db.scans.slice(-MAX_EVENTS);if(db.profileEvents.length>MAX_EVENTS)db.profileEvents=db.profileEvents.slice(-MAX_EVENTS);}
 

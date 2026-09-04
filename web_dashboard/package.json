@@ -7,13 +7,14 @@
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "verify": "node scripts/verify.mjs",
-    "test": "node --test tests/*.test.mjs"
-  },
-  "main": "server.mjs",
-  "engines": {
-    "node": "22.x"
+    "test": "node --test tests/*.test.mjs",
+    "smoke:extra": "node scripts/v9-extra-smoke.mjs"
   },
   "dependencies": {
-    "firebase-admin": "^13.4.0"
+    "firebase-admin": "^13.4.0",
+    "pdf-lib": "^1.17.1"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
