@@ -1,0 +1,52 @@
+/* QR AJN dedicated application routes */
+.quick-tools-hub{padding:54px 0 76px}
+.quick-tools-heading{max-width:720px}
+.quick-tools-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.quick-tool-card{min-height:158px;display:flex;flex-direction:column;gap:18px;padding:20px;background:var(--surface,#fff);border:1px solid var(--line,#dce3ee);border-radius:18px;text-decoration:none;color:var(--text,#111827);box-shadow:0 10px 30px rgba(34,46,80,.05);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.quick-tool-card:hover{transform:translateY(-3px);border-color:rgba(91,76,240,.28);box-shadow:0 16px 36px rgba(34,46,80,.09)}
+.quick-tool-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#eef0ff;color:#5b4cf0;font-size:20px;font-weight:900}
+.quick-tool-card>span:nth-child(2){display:flex;flex-direction:column;gap:4px}
+.quick-tool-card strong{font-size:15px;letter-spacing:-.02em}
+.quick-tool-card small{font-size:12px;line-height:1.45;color:var(--muted,#64748b)}
+.quick-tool-card b{margin-top:auto;color:#5b4cf0;font-size:18px}
+.topbar .nav-button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.route-private-analytics-card{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px;padding:20px 22px}
+.route-private-analytics-card>div{display:flex;flex-direction:column;gap:3px}
+.route-private-analytics-card small{font-size:10px;letter-spacing:.12em;color:var(--muted,#64748b);font-weight:850}
+.route-private-analytics-card strong{font-size:16px}
+.route-private-analytics-card p{margin:0;color:var(--muted,#64748b);font-size:12px}
+
+/* Home = marketing + simple cards only. Heavy workspaces are not shown here. */
+html[data-app-page="home"] #homeView>#shorten,
+html[data-app-page="home"] #homeView>#smartCreate,
+html[data-app-page="home"] #homeView>#create,
+html[data-app-page="home"] #homeView>#profileCreate,
+html[data-app-page="home"] #homeView>#smartTools,
+html[data-app-page="home"] #homeView>#v9Analytics,
+html[data-app-page="home"] #homeView>#v9PdfEditor,
+html[data-app-page="home"] #homeView>#v9Items{display:none!important}
+
+/* Dedicated workspaces. */
+html[data-app-page="create-qr"] #homeView>*,
+html[data-app-page="short-link"] #homeView>*,
+html[data-app-page="create-profile"] #homeView>*,
+html[data-app-page="smart-tools"] #homeView>*,
+html[data-app-page="open-analytics"] #homeView>*{display:none!important}
+
+html[data-app-page="create-qr"] #homeView>#create{display:block!important}
+html[data-app-page="short-link"] #homeView>#shorten{display:block!important}
+html[data-app-page="create-profile"] #homeView>#profileCreate{display:block!important}
+html[data-app-page="smart-tools"] #homeView>#smartCreate,
+html[data-app-page="smart-tools"] #homeView>#smartTools,
+html[data-app-page="smart-tools"] #homeView>#v9PdfEditor,
+html[data-app-page="smart-tools"] #homeView>#v9Items{display:block!important}
+html[data-app-page="open-analytics"] #homeView>#v9Analytics{display:block!important}
+
+html[data-app-page]:not([data-app-page="home"]) .free-highlight{display:none!important}
+html[data-app-page]:not([data-app-page="home"]) #homeView{padding-top:20px}
+html[data-app-page]:not([data-app-page="home"]) #homeView>.shell{margin-bottom:26px}
+
+@media(max-width:980px){.quick-tools-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.quick-tools-hub{padding:38px 0 54px}.quick-tools-grid{grid-template-columns:1fr 1fr}.quick-tool-card{min-height:138px;padding:17px}.route-private-analytics-card{align-items:flex-start;flex-direction:column}}
+@media(max-width:440px){.quick-tools-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.quick-tool-card{transition:none}}

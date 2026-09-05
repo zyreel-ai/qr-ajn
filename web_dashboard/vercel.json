@@ -25,7 +25,9 @@
           "manifest.webmanifest",
           "og-cover.svg",
           "node_modules/pdf-lib/dist/pdf-lib.min.js",
-          "data/**"
+          "data/**",
+          "app-pages.css",
+          "app-route-boot.js"
         ]
       }
     },

@@ -1,0 +1,1 @@
+(()=>{const p=(location.pathname||'/').replace(/\/+$/,'')||'/';const map={'/create':'create-qr','/create-qr':'create-qr','/short-link':'short-link','/create-profile':'create-profile','/smart-tools':'smart-tools','/open-analytics':'open-analytics'};document.documentElement.dataset.appPage=map[p]||'home';})();

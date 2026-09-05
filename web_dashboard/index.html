@@ -26,7 +26,9 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <title>QR AJN — Free QR Code Generator & Short Links | No Login</title>
+  <script src="/app-route-boot.js"></script>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/app-pages.css">
   <script type="application/ld+json">
   {
     "@context":"https://schema.org",
@@ -78,11 +80,11 @@
       <span><strong>QR AJN</strong><small>QR · Profiles · Analytics</small></span>
     </a>
     <nav aria-label="Main navigation">
-      <a href="/#create">Create QR</a>
-      <a href="/#shorten">Short Link</a>
-      <a href="/#profileCreate">Create Profile</a>
-      <a href="/#smartCreate">Smart Tools</a>
-      <button id="openManageButton" class="nav-button" type="button">Open Analytics</button>
+      <a href="/create-qr">Create QR</a>
+      <a href="/short-link">Short Link</a>
+      <a href="/create-profile">Create Profile</a>
+      <a href="/smart-tools">Smart Tools</a>
+      <a id="openManageButton" class="nav-button" href="/open-analytics">Open Analytics</a>
     </nav>
   </header>
 
@@ -95,7 +97,7 @@
       <span>Free short links</span>
       <span>No login</span>
       <span>No signup</span>
-      <a href="#create">Create free <span aria-hidden="true">→</span></a>
+      <a href="/create-qr">Create free <span aria-hidden="true">→</span></a>
     </div>
   </aside>
 
@@ -107,9 +109,9 @@
           <h1>Create. Shorten.<br><span>Share. Track.</span></h1>
           <p>Create unlimited static QR codes in your browser, make free short links, publish a clean <strong>qrajn.online/yourname</strong> page, share PDFs and follow real activity with live analytics — no login or signup required.</p>
           <div class="hero-actions">
-            <a class="button primary" href="#create">Create QR</a>
-            <a class="button secondary" href="#shorten">Shorten Link</a>
-            <a class="button secondary" href="#profileCreate">Create Profile</a>
+            <a class="button primary" href="/create-qr">Create QR</a>
+            <a class="button secondary" href="/short-link">Shorten Link</a>
+            <a class="button secondary" href="/create-profile">Create Profile</a>
           </div>
           <div class="trust-row"><span>Unlimited static QR codes</span><span>Free short links</span><span>No login or signup</span><span>Live analytics</span></div>
         </div>
@@ -137,6 +139,21 @@
         <div><b>2</b><span><strong>Customize</strong><small>Templates, colors and style</small></span></div>
         <div><b>3</b><span><strong>Share</strong><small>QR, profile or PDF</small></span></div>
         <div><b>4</b><span><strong>Analyze</strong><small>Scans, views and actions</small></span></div>
+      </section>
+
+      <section id="quickToolsHub" class="quick-tools-hub shell reveal" aria-labelledby="quickToolsTitle">
+        <div class="section-heading quick-tools-heading">
+          <span class="eyebrow">QR AJN TOOLS</span>
+          <h2 id="quickToolsTitle">Choose a tool and open its workspace.</h2>
+          <p>The home page stays simple. Each main QR AJN workflow now opens on its own clean page.</p>
+        </div>
+        <div class="quick-tools-grid">
+          <a class="quick-tool-card" href="/create-qr"><span class="quick-tool-icon" aria-hidden="true">▦</span><span><strong>Create QR</strong><small>Static or trackable QR codes</small></span><b aria-hidden="true">→</b></a>
+          <a class="quick-tool-card" href="/short-link"><span class="quick-tool-icon" aria-hidden="true">↗</span><span><strong>Short Link</strong><small>Clean links with live clicks</small></span><b aria-hidden="true">→</b></a>
+          <a class="quick-tool-card" href="/create-profile"><span class="quick-tool-icon" aria-hidden="true">◉</span><span><strong>Create Profile</strong><small>Public digital profile and QR</small></span><b aria-hidden="true">→</b></a>
+          <a class="quick-tool-card" href="/smart-tools"><span class="quick-tool-icon" aria-hidden="true">✦</span><span><strong>Smart Tools</strong><small>Links, campaigns, PDFs and more</small></span><b aria-hidden="true">→</b></a>
+          <a class="quick-tool-card" href="/open-analytics"><span class="quick-tool-icon" aria-hidden="true">⌁</span><span><strong>Open Analytics</strong><small>Live activity and private analytics</small></span><b aria-hidden="true">→</b></a>
+        </div>
       </section>
 
 
@@ -394,6 +411,10 @@
 
       <section id="v9Analytics" class="smart-tools shell reveal">
         <div class="section-heading"><span class="eyebrow">UNIFIED ANALYTICS</span><h2>One view across QR, profiles, links and documents.</h2><p>Real events only. Bot-like events from the existing QR/profile analytics are excluded where they are already marked.</p></div>
+        <div class="panel route-private-analytics-card">
+          <div><small>PRIVATE ITEM ANALYTICS</small><strong>Have a private management link?</strong><p>Open the analytics for a QR code or public profile you created earlier.</p></div>
+          <button id="routeOpenPrivateAnalytics" class="button primary" type="button">Open private analytics</button>
+        </div>
         <div class="v9-analytics-toolbar"><span class="analytics-live-badge"><i></i> Live · 5 sec</span><label>Range<select id="v9AnalyticsRange"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="365">365 days</option></select></label><button id="v9RefreshAnalytics" class="button secondary" type="button">Refresh</button><button id="v9ExportAnalytics" class="button secondary" type="button">Export CSV</button></div>
         <div class="metric-grid v9-metric-grid"><article><small>Total engagements</small><strong id="v9StatTotal">0</strong><span>All tracked events</span></article><article><small>QR scans</small><strong id="v9StatQr">0</strong><span>Trackable + profile QR</span></article><article><small>Link clicks</small><strong id="v9StatLinks">0</strong><span>Smart links</span></article><article><small>Profile views</small><strong id="v9StatProfiles">0</strong><span>Public profiles</span></article><article><small>Document views</small><strong id="v9StatDocs">0</strong><span>PDF opens</span></article><article><small>Approx. unique</small><strong id="v9StatUnique">0</strong><span>Privacy-safe estimate</span></article></div>
         <div class="analytics-grid"><section class="panel"><div class="panel-head"><div><small>ENGAGEMENT</small><h3>Activity by day</h3></div></div><div id="v9DailyChart" class="v9-bar-chart"></div></section><section class="panel"><div class="panel-head"><div><small>DEVICES</small><h3>Visitor mix</h3></div></div><div id="v9DeviceBreakdown" class="breakdown"></div><div class="panel-divider"></div><div class="panel-head compact"><div><small>BROWSERS</small><h3>Top browsers</h3></div></div><div id="v9BrowserBreakdown" class="breakdown"></div></section></div>

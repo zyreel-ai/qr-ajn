@@ -41,7 +41,7 @@ const IMAGE_LIMIT = 4 * 1024 * 1024;
 const PDF_LIMIT = 12 * 1024 * 1024;
 const MAX_EVENTS = 150000;
 const RESERVED_SLUGS = new Set([
-  'admin','api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','create-profile','create-qr','qr-code-generator','short-links','digital-profiles','pdf-sharing','campaigns'
+  'admin','api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','create-profile','create-qr','qr-code-generator','short-links','digital-profiles','pdf-sharing','campaigns','short-link','smart-tools','open-analytics'
 ]);
 const mime = new Map([
   ['.html','text/html; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.mjs','text/javascript; charset=utf-8'],['.css','text/css; charset=utf-8'],
@@ -230,7 +230,7 @@ const server = http.createServer(async (req,res) => {
 
     return json(res,405,{error:'Method not allowed',requestId});
   } catch(error){
-    const status=Number(error.statusCode||500); if(status>=500) console.error(`[${requestId}]`,error); return json(res,status,{error:error.message||'Request failed',requestId});
+    const status=Number(error.statusCode||error.status||500); if(status>=500) console.error(`[${requestId}]`,error); return json(res,status,{error:error.message||'Request failed',requestId});
   }
 });
 
@@ -246,8 +246,10 @@ server.listen(port,process.env.VERCEL ? undefined : host,()=>{
   console.log(' Keep this window open while testing.');
 });
 
+const APP_TOOL_ROUTE_PATHS=new Set(['/create','/create-qr','/short-link','/create-profile','/smart-tools','/open-analytics']);
 async function serveRoute(pathname,res,headOnly){
-  const spa = pathname==='/' || pathname==='/create' || pathname==='/create-profile' || /^\/manage\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/profile\/[a-z0-9-]{3,40}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/v9\/(links|campaigns|documents)\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname);
+  if(APP_TOOL_ROUTE_PATHS.has(pathname))res.setHeader('x-robots-tag','noindex, follow');
+  const spa = pathname==='/' || APP_TOOL_ROUTE_PATHS.has(pathname) || /^\/manage\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/profile\/[a-z0-9-]{3,40}\/[A-Za-z0-9_-]{20,200}$/.test(pathname) || /^\/manage\/v9\/(links|campaigns|documents)\/[A-Za-z0-9_-]{6,100}\/[A-Za-z0-9_-]{20,200}$/.test(pathname);
   const mapped = new Map([['/privacy','privacy.html'],['/terms','terms.html'],['/contact','contact.html'],['/about','about.html']]);
   let relative = mapped.get(pathname) || (spa?'index.html':pathname.replace(/^\/+/,'')); if(!relative) relative='index.html';
   if(relative.includes('..')||relative.includes('\\')||path.isAbsolute(relative)) return htmlMessage(res,400,'Invalid path','The requested path is invalid.');

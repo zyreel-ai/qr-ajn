@@ -45,7 +45,10 @@ function bind(){
   $('previewSurface').addEventListener('change',()=>{updatePreviewSurface();updatePreviewFrame();}); $('qrLogo').addEventListener('change',loadQrLogo);
   $('generateButton').addEventListener('click',generate); $('mobileGenerateQr').addEventListener('click',generate); $('mobilePreviewQr').addEventListener('click',()=>{$('qrPreviewStage').scrollIntoView({behavior:'smooth',block:'center'});});
   $('downloadPng').addEventListener('click',()=>downloadPng('qr-ajn')); $('downloadSvg').addEventListener('click',downloadSvg); $('copyQrContent').addEventListener('click',()=>copyText(state.payload)); $('shareQr').addEventListener('click',shareCurrentQr);
-  $('copyManageUrl').addEventListener('click',()=>copyText($('manageUrlOutput').value)); $('openManageButton').addEventListener('click',()=>$('manageDialog').showModal()); $('openPastedManageLink').addEventListener('click',openPastedManageLink);
+  $('copyManageUrl').addEventListener('click',()=>copyText($('manageUrlOutput').value));
+  $('openManageButton').addEventListener('click',e=>{if(normalizePath(location.pathname)!=='/open-analytics')return;e.preventDefault();$('manageDialog').showModal();});
+  $('routeOpenPrivateAnalytics')?.addEventListener('click',()=>$('manageDialog').showModal());
+  $('openPastedManageLink').addEventListener('click',openPastedManageLink);
   $('editQrForm').addEventListener('submit',saveManagedQr); $('activeToggle').addEventListener('change',toggleManagedQr); $('copyManagedQrLink').addEventListener('click',()=>copyText(managedRedirectUrl())); $('downloadManagedPng').addEventListener('click',downloadManagedPng); $('deleteManagedQr').addEventListener('click',deleteManagedQr);
   $('profileCreateForm').addEventListener('submit',createProfile); $('profileCreateForm').addEventListener('input',scheduleProfileDraft); $('profileCreateForm').addEventListener('change',scheduleProfileDraft); $('addCustomLink').addEventListener('click',()=>{addCustomLinkRow('customLinksEditor');scheduleProfileDraft();}); $('profileSlug').addEventListener('input',sanitizeSlugInput);
   for(const id of ['profileName','profileCategory','profileTagline','profileAbout','profileSlug']) $(id).addEventListener('input',updateProfilePreview); $('profileAccent').addEventListener('change',()=>{updateProfilePreview();scheduleProfileDraft();});
@@ -63,14 +66,38 @@ function bind(){
   $('deleteManagedProfile').addEventListener('click',deleteManagedProfile); window.addEventListener('popstate',route); document.addEventListener('visibilitychange',handleVisibilityChange); window.addEventListener('beforeunload',e=>{if(state.profileDirty){e.preventDefault();e.returnValue='';}});
 }
 
+const APP_PAGE_ROUTES=new Map([
+  ['/create','create-qr'],
+  ['/create-qr','create-qr'],
+  ['/short-link','short-link'],
+  ['/create-profile','create-profile'],
+  ['/smart-tools','smart-tools'],
+  ['/open-analytics','open-analytics']
+]);
+function normalizePath(value){const p=String(value||'/').replace(/\/+$/,'');return p||'/';}
 function route(){
-  clearRefresh(); hideAllViews(); const profileManage=parseProfileManageRoute(location.pathname); const qrManage=parseQrManageRoute(location.pathname);
+  clearRefresh(); hideAllViews(); delete document.documentElement.dataset.appPage;
+  const profileManage=parseProfileManageRoute(location.pathname); const qrManage=parseQrManageRoute(location.pathname);
   if(profileManage){showProfileManage(profileManage.slug,profileManage.token);return;} if(qrManage){showQrManage(qrManage.id,qrManage.token);return;}
-  if(/^\/[a-z0-9-]{3,40}\/?$/.test(location.pathname)&&!['/privacy','/terms','/contact','/about','/create','/create-profile'].includes(location.pathname)){showPublicProfile(location.pathname.replace(/^\//,'').replace(/\/$/,''));return;}
-  showHome();
+  const appPage=APP_PAGE_ROUTES.get(normalizePath(location.pathname));
+  if(appPage){showHome(appPage);return;}
+  if(/^\/[a-z0-9-]{3,40}\/?$/.test(location.pathname)&&!['/privacy','/terms','/contact','/about'].includes(normalizePath(location.pathname))){showPublicProfile(location.pathname.replace(/^\//,'').replace(/\/$/,''));return;}
+  showHome('home');
 }
 function hideAllViews(){for(const id of ['homeView','publicProfileView','qrManageView','profileManageView'])$(id).classList.add('hidden');}
-function showHome(){$('homeView').classList.remove('hidden');document.title='QR AJN — QR Codes, Public Profiles & Live Analytics';}
+function showHome(page='home'){
+  $('homeView').classList.remove('hidden');
+  document.documentElement.dataset.appPage=page;
+  const titles={
+    home:'QR AJN — QR Codes, Public Profiles & Live Analytics',
+    'create-qr':'Create QR Code — QR AJN',
+    'short-link':'Create Short Link — QR AJN',
+    'create-profile':'Create Public Profile — QR AJN',
+    'smart-tools':'Smart Tools — QR AJN',
+    'open-analytics':'Open Analytics — QR AJN'
+  };
+  document.title=titles[page]||titles.home;
+}
 
 // ---------------- QR creator ----------------
 function setMode(mode){state.mode=mode;$('staticMode').classList.toggle('active',mode==='static');$('trackMode').classList.toggle('active',mode==='track');$('staticMode').setAttribute('aria-selected',String(mode==='static'));$('trackMode').setAttribute('aria-selected',String(mode==='track'));$('staticFields').classList.toggle('hidden',mode!=='static');$('trackFields').classList.toggle('hidden',mode!=='track');$('generateButton').textContent=mode==='track'?'Create trackable QR':'Generate QR';$('mobileGenerateQr').textContent=$('generateButton').textContent;$('manageSuccess').classList.add('hidden');setMessage('creatorMessage','');resetPreview();}
