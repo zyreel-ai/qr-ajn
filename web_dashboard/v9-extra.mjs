@@ -8,7 +8,7 @@ export function createV9Extra({root,dataDir,firestore=null,storageBucket=null,is
   const uploadDir=process.env.QR_AJN_V9_UPLOAD_DIR?path.resolve(process.env.QR_AJN_V9_UPLOAD_DIR):path.join(dataDir,'v9-uploads');
   let queue=Promise.resolve();
   const rates=new Map();
-  const RESERVED=new Set(['api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','smartcreate','smarttools','v9analytics','v9pdfeditor','v9items']);
+  const RESERVED=new Set(['api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','smartcreate','smarttools','v9analytics','v9pdfeditor','v9items','qr-code-generator','short-links','digital-profiles','pdf-sharing','campaigns']);
 
   const empty=()=>({links:{},campaigns:{},documents:{},files:{},events:{},publicLinks:{},system:{createdAt:new Date().toISOString(),installSecret:crypto.randomBytes(32).toString('hex')}});
   const normalize=db=>{db=db&&typeof db==='object'?db:empty();for(const k of ['links','campaigns','documents','files','events','publicLinks'])db[k]=db[k]&&typeof db[k]==='object'?db[k]:{};db.system=db.system&&typeof db.system==='object'?db.system:{};if(!db.system.installSecret)db.system.installSecret=crypto.randomBytes(32).toString('hex');if(!db.system.createdAt)db.system.createdAt=new Date().toISOString();return db};

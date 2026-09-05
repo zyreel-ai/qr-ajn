@@ -28,9 +28,24 @@
           "data/**"
         ]
       }
+    },
+    {
+      "src": "seo-pages.mjs",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {"src": "/(.*)", "dest": "server.mjs"}
+    {
+      "src": "^/(qr-code-generator|short-links|analytics|digital-profiles|pdf-sharing|campaigns)/?$",
+      "dest": "seo-pages.mjs"
+    },
+    {
+      "src": "^/(sitemap\\.xml|sitemap-static\\.xml|sitemap-public\\.xml|robots\\.txt)$",
+      "dest": "seo-pages.mjs"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server.mjs"
+    }
   ]
 }

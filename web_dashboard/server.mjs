@@ -41,7 +41,7 @@ const IMAGE_LIMIT = 4 * 1024 * 1024;
 const PDF_LIMIT = 12 * 1024 * 1024;
 const MAX_EVENTS = 150000;
 const RESERVED_SLUGS = new Set([
-  'admin','api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','create-profile','create-qr'
+  'admin','api','manage','login','signup','privacy','terms','contact','about','analytics','assets','public','r','create','profile','profiles','qr','qrs','media','favicon','robots','sitemap','ads','health','index','404','manifest','static','dashboard','workspace','account','pricing','premium','billing','create-profile','create-qr','qr-code-generator','short-links','digital-profiles','pdf-sharing','campaigns'
 ]);
 const mime = new Map([
   ['.html','text/html; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.mjs','text/javascript; charset=utf-8'],['.css','text/css; charset=utf-8'],
