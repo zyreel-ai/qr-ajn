@@ -1,22 +1,21 @@
-/* QR AJN dedicated application routes */
-.quick-tools-hub{padding:54px 0 76px}
-.quick-tools-heading{max-width:720px}
-.quick-tools-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
-.quick-tool-card{min-height:158px;display:flex;flex-direction:column;gap:18px;padding:20px;background:var(--surface,#fff);border:1px solid var(--line,#dce3ee);border-radius:18px;text-decoration:none;color:var(--text,#111827);box-shadow:0 10px 30px rgba(34,46,80,.05);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.quick-tool-card:hover{transform:translateY(-3px);border-color:rgba(91,76,240,.28);box-shadow:0 16px 36px rgba(34,46,80,.09)}
-.quick-tool-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#eef0ff;color:#5b4cf0;font-size:20px;font-weight:900}
-.quick-tool-card>span:nth-child(2){display:flex;flex-direction:column;gap:4px}
-.quick-tool-card strong{font-size:15px;letter-spacing:-.02em}
-.quick-tool-card small{font-size:12px;line-height:1.45;color:var(--muted,#64748b)}
-.quick-tool-card b{margin-top:auto;color:#5b4cf0;font-size:18px}
+/* QR AJN landing + dedicated application routes */
+:root{--route-line:#e4e8f0;--route-muted:#667085;--route-ink:#111827;--route-primary:#5b4cf0;--route-soft:#f4f3ff}
 .topbar .nav-button{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
-.route-private-analytics-card{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px;padding:20px 22px}
-.route-private-analytics-card>div{display:flex;flex-direction:column;gap:3px}
-.route-private-analytics-card small{font-size:10px;letter-spacing:.12em;color:var(--muted,#64748b);font-weight:850}
-.route-private-analytics-card strong{font-size:16px}
-.route-private-analytics-card p{margin:0;color:var(--muted,#64748b);font-size:12px}
+.topbar nav a[href="/smart-tools"]{display:none!important}
 
-/* Home = marketing + simple cards only. Heavy workspaces are not shown here. */
+/* Landing: only the four main workflows are promoted. */
+.quick-tools-hub{padding:28px 0 76px}
+.quick-tools-heading{max-width:760px}
+.quick-tools-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.quick-tools-grid a[href="/smart-tools"]{display:none!important}
+.quick-tool-card{min-height:174px;display:flex;flex-direction:column;gap:18px;padding:22px;background:rgba(255,255,255,.92);border:1px solid var(--route-line);border-radius:18px;text-decoration:none;color:var(--route-ink);box-shadow:0 10px 30px rgba(15,23,42,.045);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.quick-tool-card:hover{transform:translateY(-3px);border-color:#cfc9ff;box-shadow:0 16px 38px rgba(15,23,42,.075)}
+.quick-tool-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:var(--route-soft);color:var(--route-primary);font-size:20px;font-weight:900}
+.quick-tool-copy{display:flex;flex-direction:column;gap:6px}
+.quick-tool-card strong{font-size:16px;letter-spacing:-.025em}
+.quick-tool-card small{font-size:12px;line-height:1.55;color:var(--route-muted)}
+.quick-tool-card b{margin-top:auto;color:var(--route-primary);font-size:18px}
+
 html[data-app-page="home"] #homeView>#shorten,
 html[data-app-page="home"] #homeView>#smartCreate,
 html[data-app-page="home"] #homeView>#create,
@@ -24,29 +23,96 @@ html[data-app-page="home"] #homeView>#profileCreate,
 html[data-app-page="home"] #homeView>#smartTools,
 html[data-app-page="home"] #homeView>#v9Analytics,
 html[data-app-page="home"] #homeView>#v9PdfEditor,
-html[data-app-page="home"] #homeView>#v9Items{display:none!important}
+html[data-app-page="home"] #homeView>#v9Items,
+.landing-workspace-hidden,.landing-copy-hidden{display:none!important}
 
-/* Dedicated workspaces. */
-html[data-app-page="create-qr"] #homeView>*,
-html[data-app-page="short-link"] #homeView>*,
-html[data-app-page="create-profile"] #homeView>*,
-html[data-app-page="smart-tools"] #homeView>*,
-html[data-app-page="open-analytics"] #homeView>*{display:none!important}
+/* Fail-safe dedicated routes: JS focuses the correct section. If JS fails, the page remains usable instead of blank. */
+.app-route-hidden{display:none!important}
+.app-route-visible{display:block!important;visibility:visible!important;opacity:1!important;transform:none!important}
+body.route-workspace .free-highlight{display:none!important}
+body.route-workspace #homeView{min-height:calc(100vh - 72px);padding:22px 0 56px}
+body.route-workspace #homeView>.app-route-visible{margin-bottom:0}
+.route-workspace-bar{padding:24px 0 8px}
+.route-workspace-bar .route-back{display:inline-flex;margin-bottom:18px;color:#5b4cf0;text-decoration:none;font-size:12px;font-weight:800}
+.route-workspace-bar h1{margin:5px 0 5px;font-size:clamp(30px,4vw,46px);letter-spacing:-.045em}
+.route-workspace-bar p{margin:0;color:var(--route-muted);font-size:14px}
+.route-error{padding-top:70px;padding-bottom:90px}
 
-html[data-app-page="create-qr"] #homeView>#create{display:block!important}
-html[data-app-page="short-link"] #homeView>#shorten{display:block!important}
-html[data-app-page="create-profile"] #homeView>#profileCreate{display:block!important}
-html[data-app-page="smart-tools"] #homeView>#smartCreate,
-html[data-app-page="smart-tools"] #homeView>#smartTools,
-html[data-app-page="smart-tools"] #homeView>#v9PdfEditor,
-html[data-app-page="smart-tools"] #homeView>#v9Items{display:block!important}
-html[data-app-page="open-analytics"] #homeView>#v9Analytics{display:block!important}
+/* Landing information architecture */
+.landing-feature-guide{display:block}
+.landing-section{padding:68px 0}
+.landing-section+.landing-section{border-top:1px solid rgba(217,223,234,.78)}
+.landing-section-head{max-width:820px;margin-bottom:24px}
+.landing-section-head.compact{max-width:720px}
+.landing-section-head h2{font-size:clamp(34px,4.7vw,56px);line-height:1.04;letter-spacing:-.05em;margin:8px 0 10px}
+.landing-section-head p{margin:0;color:#526077;line-height:1.7}
 
-html[data-app-page]:not([data-app-page="home"]) .free-highlight{display:none!important}
-html[data-app-page]:not([data-app-page="home"]) #homeView{padding-top:20px}
-html[data-app-page]:not([data-app-page="home"]) #homeView>.shell{margin-bottom:26px}
+.feature-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.feature-overview-card{position:relative;padding:26px;background:rgba(255,255,255,.92);border:1px solid var(--route-line);border-radius:20px;box-shadow:0 10px 30px rgba(15,23,42,.04)}
+.feature-number{display:inline-grid;place-items:center;min-width:34px;height:28px;padding:0 9px;border-radius:999px;background:#f2f0ff;color:#5848e8;font-size:10px;font-weight:900;letter-spacing:.08em}
+.feature-overview-card h3{font-size:22px;letter-spacing:-.035em;margin:16px 0 7px}
+.feature-overview-card>p{margin:0;color:#59677c;line-height:1.65;font-size:13px}
+.feature-overview-card ul{margin:18px 0;padding:0;list-style:none;display:grid;gap:9px}
+.feature-overview-card li{position:relative;padding-left:19px;color:#475467;font-size:12px;line-height:1.55}
+.feature-overview-card li:before{content:"✓";position:absolute;left:0;color:#059669;font-weight:900}
+.feature-overview-card>a{display:inline-flex;margin-top:6px;color:#5544df;text-decoration:none;font-size:12px;font-weight:850}
 
-@media(max-width:980px){.quick-tools-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:680px){.quick-tools-hub{padding:38px 0 54px}.quick-tools-grid{grid-template-columns:1fr 1fr}.quick-tool-card{min-height:138px;padding:17px}.route-private-analytics-card{align-items:flex-start;flex-direction:column}}
-@media(max-width:440px){.quick-tools-grid{grid-template-columns:1fr}}
-@media(prefers-reduced-motion:reduce){.quick-tool-card{transition:none}}
+.secondary-capabilities{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:22px;padding:20px 22px;background:#111827;color:#fff;border-radius:18px}
+.secondary-capabilities>div{display:flex;flex-direction:column;gap:3px}
+.secondary-capabilities strong{font-size:14px}
+.secondary-capabilities span{font-size:11px;color:#c9d1df;line-height:1.6}
+.secondary-capabilities>a{flex:0 0 auto;color:#fff;text-decoration:none;border:1px solid #3a4658;border-radius:11px;padding:10px 13px;font-size:11px;font-weight:800}
+
+.landing-how-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.landing-how-grid article{padding:22px;background:rgba(255,255,255,.86);border:1px solid var(--route-line);border-radius:17px}
+.landing-how-grid b{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#f0eeff;color:#5949df}
+.landing-how-grid h3{margin:14px 0 6px;font-size:15px}
+.landing-how-grid p{margin:0;color:#667085;font-size:12px;line-height:1.6}
+
+.landing-trust{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;align-items:start;padding:28px;background:rgba(255,255,255,.78);border:1px solid var(--route-line);border-radius:22px}
+.landing-trust .landing-section-head{margin:0}
+.landing-trust-points{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.landing-trust-points span{padding:13px 14px;background:#fff;border:1px solid #e5e9f1;border-radius:12px;color:#475467;font-size:12px;font-weight:700}
+
+.landing-legal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.landing-legal-grid a{min-height:142px;display:flex;flex-direction:column;gap:8px;padding:20px;background:#fff;border:1px solid var(--route-line);border-radius:17px;text-decoration:none;color:var(--route-ink);transition:transform .15s ease,border-color .15s ease}
+.landing-legal-grid a:hover{transform:translateY(-2px);border-color:#cbc4ff}
+.landing-legal-grid span{font-size:11px;font-weight:900;color:#5b4cf0;text-transform:uppercase;letter-spacing:.08em}
+.landing-legal-grid strong{font-size:13px;line-height:1.5}
+.landing-legal-grid b{margin-top:auto;font-size:11px;color:#667085}
+
+footer{padding:0!important}
+.footer-shell{min-height:132px;display:grid;grid-template-columns:1.1fr 1fr 1fr auto;align-items:center;gap:24px;padding:28px 0}
+.footer-brand-block{display:flex;flex-direction:column;gap:4px}
+.footer-brand{font-size:17px;font-weight:900;text-decoration:none}
+.footer-brand-block span,.footer-shell small{font-size:10px;color:#7b8799}
+.footer-links{display:flex;flex-wrap:wrap;gap:10px 14px}
+.footer-links a{margin:0!important;font-size:11px;color:#536078;text-decoration:none}
+.footer-links a:hover{color:#4f46e5}
+.route-footer .footer-shell{min-height:100px}
+
+/* Private analytics entry card retained on analytics workspace. */
+.route-private-analytics-card{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 0 22px;padding:20px 22px}
+.route-private-analytics-card>div{display:flex;flex-direction:column;gap:3px}
+.route-private-analytics-card small{font-size:10px;letter-spacing:.12em;color:var(--route-muted);font-weight:850}
+.route-private-analytics-card strong{font-size:16px}
+.route-private-analytics-card p{margin:0;color:var(--route-muted);font-size:12px}
+
+@media(max-width:980px){
+  .quick-tools-grid,.landing-legal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .landing-how-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .footer-shell{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .feature-overview-grid,.landing-trust{grid-template-columns:1fr}
+  .landing-trust-points{grid-template-columns:1fr}
+  .secondary-capabilities{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:560px){
+  .quick-tools-grid,.landing-legal-grid,.landing-how-grid{grid-template-columns:1fr}
+  .quick-tools-hub{padding:20px 0 54px}
+  .quick-tool-card{min-height:148px;padding:18px}
+  .landing-section{padding:48px 0}
+  .footer-shell{grid-template-columns:1fr;gap:14px;padding:24px 0}
+}
+@media(prefers-reduced-motion:reduce){.quick-tool-card,.landing-legal-grid a{transition:none}}
