@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
+import seoHandler from '../seo-pages.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const port=49700+Math.floor(Math.random()*150);
@@ -60,24 +61,28 @@ test('application route names stay reserved from public content',async()=>{
   assert.equal(String(v9Body.error||'').includes('public name'),true);
 });
 
-test('landing and workspace assets contain the premium V9 contract',async()=>{
+test('landing and workspace assets contain the complete V10 UI contract',async()=>{
   let r=await fetch(base+'/app-pages.css');assert.equal(r.status,200);let text=await r.text();
   for(const contract of [
-    'QR AJN Premium Landing V9',
+    'QR AJN Complete UI V10',
     '.qrajn-premium-hero',
     '.qrajn-primary-tools .quick-tools-grid',
     '.qrajn-mega-section',
     '.qrajn-product-card',
     '.qrajn-how-section',
     '@keyframes qrajnFloat',
-    '@keyframes qrajnDrawChart',
+    'V10 GLOBAL WORKSPACE SYSTEM',
+    '.v10-shortlink-grid',
+    '.v10-analytics-primary',
+    '.v10-smart-launchpad',
+    '@keyframes v10DrawRealChart',
     '.app-route-hidden{display:none!important}'
   ])assert.equal(text.includes(contract),true,contract);
   assert.equal(text.includes('html[data-app-page="create-qr"] #homeView>*'),false,'old route-wide hide-all CSS must not return');
 
   r=await fetch(base+'/app-route-boot.js');assert.equal(r.status,200);text=await r.text();
   for(const contract of [
-    "const VERSION='QR_AJN_PREMIUM_LANDING_V9'",
+    "const VERSION='QR_AJN_COMPLETE_UI_V10'",
     "const HOME_CARD_ROUTES=['/create-qr','/short-link','/create-profile','/open-analytics']",
     "href='https://ajnpdf.com'",
     "href='https://ajn.buzz'",
@@ -86,6 +91,51 @@ test('landing and workspace assets contain the premium V9 contract',async()=>{
     'Powerful Features',
     'Recommended AJN Products',
     'How It Works',
+    'function decorateQrWorkspace()',
+    'function decorateShortLinkWorkspace()',
+    'function decorateProfileWorkspace()',
+    'function decorateAnalyticsWorkspace()',
+    'function decorateSmartTools()',
+    'function renderAnalyticsV10(data)',
     'function setupWorkspace(page)'
   ])assert.equal(text.includes(contract),true,contract);
+});
+
+test('V10 removes demo analytics copy and adds real-data-only analytics modules',async()=>{
+  let r=await fetch(base+'/app-route-boot.js');assert.equal(r.status,200);const text=await r.text();
+  assert.equal(text.includes('Example preview'),false);
+  assert.equal(text.includes('DEMO DATA'),false);
+  assert.equal(text.includes('Analytics begin at zero and populate only from real events.'),true);
+  for(const id of ['v10ActivityLine','v10EventMix','v10Systems','v10Referrers','v10Hours','v10Weekdays','v10QrVsLink','v10Cumulative'])assert.equal(text.includes(id),true,id);
+});
+
+test('SEO feature page uses the complete V10 visual system and ecosystem links',async()=>{
+  // SEO feature pages are served by seo-pages.mjs through Vercel routing,
+  // not by the localhost server.mjs SPA router. Test the real SEO handler directly.
+  const result=await new Promise((resolve,reject)=>{
+    const headers={};
+    const res={
+      statusCode:200,
+      setHeader(k,v){headers[String(k).toLowerCase()]=v},
+      end(body=''){resolve({status:this.statusCode,headers,body:String(body)})}
+    };
+    Promise.resolve(seoHandler({url:'/qr-code-generator',method:'GET'},res)).catch(reject);
+  });
+  assert.equal(result.status,200);
+  assert.equal(result.body.includes('data-ui="qrajn-seo-v10"'),true);
+  assert.equal(result.body.includes('https://ajnpdf.com'),true);
+  assert.equal(result.body.includes('https://ajn.buzz'),true);
+  assert.equal(result.body.includes('Example preview'),false);
+});
+
+test('about and legal pages use the shared V10 legal UI',async()=>{
+  let r=await fetch(base+'/legal-ui.css');assert.equal(r.status,200);let text=await r.text();
+  assert.equal(text.includes('QR AJN Legal UI V10'),true);
+  r=await fetch(base+'/about');assert.equal(r.status,200);text=await r.text();
+  assert.equal(text.includes('data-ui="qrajn-about-v10"'),true);
+  assert.equal(text.includes('Simple tools.'),true);
+  for(const route of ['/privacy','/terms','/contact']){
+    const page=await fetch(base+route);assert.equal(page.status,200,route);
+    const html=await page.text();assert.equal(html.includes('data-ui="qrajn-legal-v10"'),true,route);
+  }
 });

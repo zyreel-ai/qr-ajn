@@ -27,7 +27,8 @@
           "node_modules/pdf-lib/dist/pdf-lib.min.js",
           "data/**",
           "app-pages.css",
-          "app-route-boot.js"
+          "app-route-boot.js",
+          "legal-ui.css"
         ]
       }
     },
