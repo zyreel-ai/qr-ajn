@@ -60,12 +60,32 @@ test('application route names stay reserved from public content',async()=>{
   assert.equal(String(v9Body.error||'').includes('public name'),true);
 });
 
-test('landing and workspace assets contain the non-empty route contract',async()=>{
+test('landing and workspace assets contain the premium V9 contract',async()=>{
   let r=await fetch(base+'/app-pages.css');assert.equal(r.status,200);let text=await r.text();
-  for(const contract of ['.quick-tools-grid{display:grid;grid-template-columns:repeat(4','.app-route-hidden{display:none!important}','landing-feature-guide','landing-legal-grid'])assert.equal(text.includes(contract),true,contract);
+  for(const contract of [
+    'QR AJN Premium Landing V9',
+    '.qrajn-premium-hero',
+    '.qrajn-primary-tools .quick-tools-grid',
+    '.qrajn-mega-section',
+    '.qrajn-product-card',
+    '.qrajn-how-section',
+    '@keyframes qrajnFloat',
+    '@keyframes qrajnDrawChart',
+    '.app-route-hidden{display:none!important}'
+  ])assert.equal(text.includes(contract),true,contract);
   assert.equal(text.includes('html[data-app-page="create-qr"] #homeView>*'),false,'old route-wide hide-all CSS must not return');
 
   r=await fetch(base+'/app-route-boot.js');assert.equal(r.status,200);text=await r.text();
-  for(const contract of ["const HOME_CARD_ROUTES=['/create-qr','/short-link','/create-profile','/open-analytics']",'function setupLanding()','function setupWorkspace(page)','id="landingLegal"','Workspace unavailable'])assert.equal(text.includes(contract),true,contract);
-  assert.equal(text.includes("card('/smart-tools'"),false);
+  for(const contract of [
+    "const VERSION='QR_AJN_PREMIUM_LANDING_V9'",
+    "const HOME_CARD_ROUTES=['/create-qr','/short-link','/create-profile','/open-analytics']",
+    "href='https://ajnpdf.com'",
+    "href='https://ajn.buzz'",
+    'SIMPLE TOOLS. BIGGER POSSIBILITIES.',
+    'All in One Place',
+    'Powerful Features',
+    'Recommended AJN Products',
+    'How It Works',
+    'function setupWorkspace(page)'
+  ])assert.equal(text.includes(contract),true,contract);
 });
