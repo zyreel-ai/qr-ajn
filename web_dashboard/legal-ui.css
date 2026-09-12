@@ -6,3 +6,9 @@
 .contact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.contact-card{padding:18px;border:1px solid var(--line);border-radius:14px;background:#fff}.contact-card strong{font-size:10px}.contact-card p{font-size:8px!important;margin-bottom:0}
 @media(max-width:850px){.legal-nav{display:none}.legal-layout{grid-template-columns:1fr}.legal-toc{position:static}.about-hero-grid{grid-template-columns:1fr}.about-art{min-height:220px}.about-grid,.ecosystem-grid,.legal-links{grid-template-columns:1fr 1fr}.legal-footer .shell{grid-template-columns:1fr;padding:22px 0}.legal-footer nav{flex-wrap:wrap}}
 @media(max-width:560px){.shell{width:calc(100% - 24px)}.legal-products a span{display:none}.legal-hero{padding-top:48px}.legal-card{padding:20px}.about-grid,.ecosystem-grid,.legal-links,.principles,.contact-grid{grid-template-columns:1fr}.legal-topbar{height:64px}.legal-brand small{display:none}}
+
+/* QR AJN BRAND LOGO V12 LEGAL */
+.legal-brand-logo-v12{
+  width:42px;height:42px;object-fit:contain;flex:0 0 auto;
+  filter:drop-shadow(0 7px 12px rgba(69,46,213,.20));
+}

@@ -28,7 +28,13 @@
           "data/**",
           "app-pages.css",
           "app-route-boot.js",
-          "legal-ui.css"
+          "legal-ui.css",
+          "qr-ajn-logo-v12.png",
+          "qr-ajn-logo-512-v12.png",
+          "qr-ajn-logo-192-v12.png",
+          "qr-ajn-logo-180-v12.png",
+          "qr-ajn-logo-64-v12.png",
+          "qr-ajn-logo-32-v12.png"
         ]
       }
     },

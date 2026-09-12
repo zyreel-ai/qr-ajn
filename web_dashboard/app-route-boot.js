@@ -130,7 +130,7 @@
           <div class="dashboard-window-bar"><i></i><i></i><i></i><span>qrajn.online</span></div>
           <div class="dashboard-body">
             <aside class="dashboard-sidebar">
-              <div class="mini-brand"><span class="mini-brand-mark">▦</span><b>QR AJN</b></div>
+              <div class="mini-brand"><img class="mini-brand-logo-v12" src="/qr-ajn-logo-v12.png" alt="" width="24" height="24"><b>QR AJN</b></div>
               <a class="active">${icon.qr}<span>Create QR</span></a>
               <a>${icon.link}<span>Short Link</span></a>
               <a>${icon.user}<span>Create Profile</span></a>
@@ -283,7 +283,7 @@
     footer.classList.add('qrajn-footer');
     footer.innerHTML=`<div class="qrajn-footer-wave" aria-hidden="true"></div><div class="footer-shell shell">
       <div class="footer-brand-block">
-        <a class="footer-brand" href="/"><span class="footer-mini-logo">▦</span><span><strong>QR AJN</strong><small>QR · Profiles · Analytics</small></span></a>
+        <a class="footer-brand" href="/"><img class="footer-brand-logo-v12" src="/qr-ajn-logo-v12.png" alt="" width="42" height="42"><span><strong>QR AJN</strong><small>QR · Profiles · Analytics</small></span></a>
         <p>Simple tools for a more connected world.<br>Built by AJN. Free for everyone.</p>
         <small>© 2026 QR AJN. All rights reserved.</small>
       </div>

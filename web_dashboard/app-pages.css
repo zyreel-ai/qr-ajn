@@ -323,3 +323,13 @@ body.route-workspace #homeView{width:100%;padding:0 0 54px!important}
   .v10-analytics .v9-metric-grid{grid-template-columns:1fr 1fr!important}.v10-analytics .v9-analytics-toolbar{top:64px;overflow-x:auto}.v10-filter{min-width:135px}
   .v10-donut-layout{grid-template-columns:1fr}.v10-donut{margin:auto}.v10-donut-legend{grid-template-columns:1fr 1fr}.v10-smart-ecosystem{grid-template-columns:1fr}.v10-smart-ecosystem>div{grid-column:auto}
 }
+
+/* QR AJN BRAND LOGO V12 APP */
+.mini-brand-logo-v12{
+  width:24px;height:24px;object-fit:contain;flex:0 0 auto;
+  filter:drop-shadow(0 4px 7px rgba(69,46,213,.18));
+}
+.footer-brand-logo-v12{
+  width:42px;height:42px;object-fit:contain;flex:0 0 auto;
+  filter:drop-shadow(0 7px 12px rgba(69,46,213,.20));
+}

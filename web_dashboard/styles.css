@@ -55,3 +55,14 @@ dialog{width:min(540px,calc(100% - 28px));border:0;border-radius:20px;padding:0;
 @media(max-width:900px){.seo-benefit-grid{grid-template-columns:1fr 1fr}.free-highlight-inner{justify-content:flex-start;padding-left:18px;padding-right:18px}.free-spark{display:none}}
 @media(max-width:560px){.seo-benefit-grid,.seo-faq-grid{grid-template-columns:1fr}.seo-benefits{padding-bottom:42px}.free-highlight-inner>span:nth-of-type(3),.free-highlight-inner>span:nth-of-type(4){display:none}.free-highlight-inner{gap:7px;font-size:9px}.free-highlight-inner strong{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.free-spark,.live-pill i,#v9QuickLiveStatus i{animation:none!important}}
+
+/* QR AJN BRAND LOGO V12 */
+.brand-logo-v12{
+  width:44px;height:44px;object-fit:contain;flex:0 0 auto;
+  filter:drop-shadow(0 7px 12px rgba(69,46,213,.20));
+  transform:translateZ(0);
+}
+.brand:hover .brand-logo-v12{filter:drop-shadow(0 9px 15px rgba(84,48,224,.28))}
+@media(max-width:620px){
+  .brand-logo-v12{width:40px;height:40px}
+}
